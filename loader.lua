@@ -1,6 +1,5 @@
-local Http = Service or game:GetService("HttpService")
+local Http = game:GetService("HttpService")
 
--- إضافة وقت دقيق لمنع الـ Cache نهائياً
 local timeStamp = tostring(os.time())
 local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?time=" .. timeStamp
 local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?time=" .. timeStamp
@@ -14,10 +13,12 @@ if not success then
     return
 end
 
--- تنظيف النص من أي مسافات مخفية
-local statusText = response:match('"status"%s*:%s*"([^"]+)"')
+local successDecode, statusData = pcall(function()
+    return Http:JSONDecode(response)
+end)
 
-if statusText == "تشغيل" then
+-- التحقق من القيمة البوليانية مباشرة
+if successDecode and statusData and statusData.enabled == true then
     local scriptSuccess, scriptCode = pcall(function()
         return game:HttpGet(mainURL)
     end)
