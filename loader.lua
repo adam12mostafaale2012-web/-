@@ -1,6 +1,6 @@
 local Http = game:GetService("HttpService")
 
--- روابط الملفات المباشرة مع منع الـ Cache
+-- إضافة رقم عشوائي لمنع الـ Cache وتقرأ التعديل فوراً
 local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
 local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
 
