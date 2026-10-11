@@ -1,21 +1,28 @@
 local Http = game:GetService("HttpService")
 
--- إضافة رقم عشوائي لمنع الـ Cache وتقرأ التعديل فوراً
-local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
-local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
-
-local success, statusData = pcall(function()
-    return Http:JSONDecode(game:HttpGet(statusURL))
-end)
-
-if success and statusData and statusData.enabled == true then
-    local scriptCode = game:HttpGet(mainURL)
-    local loadedFunc, err = loadstring(scriptCode)
+local function checkStatus()
+    local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
+    local success, response = pcall(function()
+        return game:HttpGet(statusURL)
+    end)
     
+    if success and response then
+        local decodeSuccess, data = pcall(function()
+            return Http:JSONDecode(response)
+        end)
+        if decodeSuccess and data and data.enabled == true then
+            return true
+        end
+    end
+    return false
+end
+
+if checkStatus() then
+    local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
+    local scriptCode = game:HttpGet(mainURL)
+    local loadedFunc = loadstring(scriptCode)
     if loadedFunc then
         loadedFunc()
-    else
-        warn("خطأ في تشغيل السكريبت الرئيسي:", err)
     end
 else
     game:GetService("StarterGui"):SetCore("SendNotification", {
