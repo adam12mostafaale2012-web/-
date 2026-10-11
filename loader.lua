@@ -2,7 +2,7 @@ local Http = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
--- هنا الرابط المباشر لملف status.json بتاعك على جيت هاب (مع منع الكاش بـ tick)
+-- دالة فحص الحالة بـ tick لضمان التحديث الفوري
 local function getStatus()
     local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
     local success, response = pcall(function()
@@ -10,7 +10,6 @@ local function getStatus()
     end)
     
     if success and response then
-        -- لو الملف فيه true هيشتغل، لو false هيوقف
         if response:find("true") then
             return true
         end
@@ -18,7 +17,7 @@ local function getStatus()
     return false
 end
 
--- 1️⃣ الفحص قبل التشغيل
+-- 1️⃣ الفحص قبل تشغيل السكريبت أول ما اللاعب يدخل
 if getStatus() == true then
     local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
     local scriptCode = game:HttpGet(mainURL)
@@ -28,16 +27,20 @@ if getStatus() == true then
         loadedFunc()
     end
     
-    -- 2️⃣ المراقبة المستمرة أثناء اللعب
+    -- 2️⃣ حلقة مراقبة أثناء اللعب (لو قفلت السكريبت وأنت جوه الجيم)
     task.spawn(function()
         while task.wait(3) do
             if getStatus() == false then
-                StarterGui:SetCore("SendNotification", {
-                    Title = "تنبيه الصيانة",
-                    Text = "تم إيقاف السكريبت الآن للصيانة.",
-                    Duration = 7
-                })
+                -- إرسال الإشعار بالرسالة التي طلبتها بالضبط
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", {
+                        Title = "تنبيه صيانة",
+                        Text = "نعتذر يوجد صيانة من المطور آدم",
+                        Duration = 8
+                    })
+                end)
                 
+                -- إغلاق واجهات السكريبت فوراً لكل اللاعبين في الجيم
                 for _, gui in pairs(CoreGui:GetChildren()) do
                     if gui:IsA("ScreenGui") and not gui.Name:find("Roblox") then
                         gui:Destroy()
@@ -50,9 +53,12 @@ if getStatus() == true then
     end)
 
 else
-    StarterGui:SetCore("SendNotification", {
-        Title = "تنبيه",
-        Text = "السكريبت متوقف حالياً للصيانة.",
-        Duration = 5
-    })
+    -- لو اللاعب حاول يشغل السكريبت وهو في حالة صيانة
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "تنبيه صيانة",
+            Text = "نعتذر يوجد صيانة من المطور آدم",
+            Duration = 6
+        })
+    end)
 end
