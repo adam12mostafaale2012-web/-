@@ -1,10 +1,10 @@
 local Http = game:GetService("HttpService")
 
--- رابط ملف التحكم (حالة السكريبت)
+-- رابط ملف التحكم
 local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json"
 
--- رابط السكريبت الرئيسي
-local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/%D8%A7%D8%B3%D9%83%D8%B1%D9%8A%D9%81%D8%AA%20%D8%A7%D8%AF%D9%85"
+-- رابط السكريبت الرئيسي الجديد المباشر
+local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua"
 
 local success, statusData = pcall(function()
     return Http:JSONDecode(game:HttpGet(statusURL))
