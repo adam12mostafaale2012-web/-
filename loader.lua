@@ -2,16 +2,15 @@ local Http = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
--- حط هنا رابط الـ Raw الخاص بملف الـ Pastebin بتاعك
-local pastebinURL = "رابط_الـ_راو_بتاع_الـ_باستبن_هنا?v=" .. tick()
-
+-- هنا الرابط المباشر لملف status.json بتاعك على جيت هاب (مع منع الكاش بـ tick)
 local function getStatus()
+    local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
     local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()) -- مؤقتاً لحد ما تحط رابط الباستبن
+        return game:HttpGet(statusURL)
     end)
     
     if success and response then
-        -- لو القيمة بتحتوي على true (يعني شغّال)
+        -- لو الملف فيه true هيشتغل، لو false هيوقف
         if response:find("true") then
             return true
         end
@@ -29,7 +28,7 @@ if getStatus() == true then
         loadedFunc()
     end
     
-    -- 2️⃣ المراقبة المستمرة أثناء اللعب للإيقاف الفوري
+    -- 2️⃣ المراقبة المستمرة أثناء اللعب
     task.spawn(function()
         while task.wait(3) do
             if getStatus() == false then
@@ -39,7 +38,6 @@ if getStatus() == true then
                     Duration = 7
                 })
                 
-                -- مسح واجهات السكريبت فوراً
                 for _, gui in pairs(CoreGui:GetChildren()) do
                     if gui:IsA("ScreenGui") and not gui.Name:find("Roblox") then
                         gui:Destroy()
