@@ -2,27 +2,26 @@ local Http = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
--- دالة لقراءة حالة السكريبت مع كسر الـ Cache نهائياً باستخدام os.time()
+-- حط هنا رابط الـ Raw الخاص بملف الـ Pastebin بتاعك
+local pastebinURL = "رابط_الـ_راو_بتاع_الـ_باستبن_هنا?v=" .. tick()
+
 local function getStatus()
-    local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?t=" .. os.time()
     local success, response = pcall(function()
-        return game:HttpGet(statusURL)
+        return game:HttpGet("https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()) -- مؤقتاً لحد ما تحط رابط الباستبن
     end)
     
     if success and response then
-        local decodeSuccess, data = pcall(function()
-            return Http:JSONDecode(response)
-        end)
-        if decodeSuccess and data and type(data.enabled) == "boolean" then
-            return data.enabled
+        -- لو القيمة بتحتوي على true (يعني شغّال)
+        if response:find("true") then
+            return true
         end
     end
-    return false -- لو فشل الاتصال أو القراءة، يوقف السكريبت للأمان
+    return false
 end
 
--- 1️⃣ الفحص الأول قبل التشغيل
+-- 1️⃣ الفحص قبل التشغيل
 if getStatus() == true then
-    local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?t=" .. os.time()
+    local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
     local scriptCode = game:HttpGet(mainURL)
     local loadedFunc = loadstring(scriptCode)
     
@@ -30,38 +29,32 @@ if getStatus() == true then
         loadedFunc()
     end
     
-    -- 2️⃣ حلقة المراقبة المستمرة أثناء اللعب
+    -- 2️⃣ المراقبة المستمرة أثناء اللعب للإيقاف الفوري
     task.spawn(function()
-        while task.wait(5) do -- يفحص كل 5 ثواني
+        while task.wait(3) do
             if getStatus() == false then
-                -- إشعار الصيانة
-                pcall(function()
-                    StarterGui:SetCore("SendNotification", {
-                        Title = "تنبيه الصيانة",
-                        Text = "تم إيقاف السكريبت الآن للصيانة.",
-                        Duration = 7
-                    })
-                end)
+                StarterGui:SetCore("SendNotification", {
+                    Title = "تنبيه الصيانة",
+                    Text = "تم إيقاف السكريبت الآن للصيانة.",
+                    Duration = 7
+                })
                 
-                -- مسح واجهات السكريبت من الشاشة
+                -- مسح واجهات السكريبت فوراً
                 for _, gui in pairs(CoreGui:GetChildren()) do
                     if gui:IsA("ScreenGui") and not gui.Name:find("Roblox") then
                         gui:Destroy()
                     end
                 end
                 
-                break -- الخروج من حلقة الفحص
+                break
             end
         end
     end)
 
 else
-    -- إشعار لو كان متوقف من الأول
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = "تنبيه",
-            Text = "السكريبت متوقف حالياً للصيانة.",
-            Duration = 5
-        })
-    end)
+    StarterGui:SetCore("SendNotification", {
+        Title = "تنبيه",
+        Text = "السكريبت متوقف حالياً للصيانة.",
+        Duration = 5
+    })
 end
