@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -65,6 +65,9 @@ local HitboxSizeVal = 4
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
 
+-- Theme Palette State (Default: Green/Cyan)
+local CurrentThemeColor = Color3.fromRGB(0, 255, 180)
+
 -- Waypoint Save Variable
 local SavedPosition = nil
 
@@ -91,114 +94,114 @@ local CountryNamesAR = {
 
 -- UI References
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
-local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef
+local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef, ThemePanelBtnRef
 local SavePosBtnRef, LoadPosBtnRef
 local CountryLabelRef, FooterLabelRef
 local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
 local UpdatesFrame, UpdatesCloseBtn, UpdatesTitle, UpdatesTextLabel, UpdatesScroll
+local ThemeFrame, ThemeCloseBtn, ThemeTitleText, ThemeGreenBtn, ThemeRedBtn, ThemeBlueBtn, ThemePurpleBtn
 
 -- Translations Setup
 local Translations = {
 	EN = {
 		Title = "⚡ ADAM & YASEEN CONTROLLER ⚡",
-		SpeedText = "Walk Speed",
-		FlyText = "Flight Matrix",
-		NoclipText = "Noclip",
-		PlatformText = "Quantum Platform",
-		InstantInteractText = "Instant Interact",
-		ESPText = "Player ESP",
-		MM2ESPText = "MM2 Role Reveal",
-		MultiJumpText = "Multi-Jump",
-		ArhangelsText = "ARHANGELS TEAM",
-		FPSBoostText = "FPS Boost (Anti-Lag)",
-		HitboxText = "Hitbox Size",
-		TeleportBtn = "Teleport",
-		TeleportPlaceholder = "Player Name...",
-		ServerHopBtn = "Server Hop System",
-		UpdatesBtn = "Changelog / Updates 📜",
-		SavePosBtn = "Save Position 📍",
-		LoadPosBtn = "Teleport to Saved 🚀",
-		UpdatesTitleText = "📜 Script Changelog & Features",
+		SpeedText = "Walk Speed Boost",
+		FlyText = "Free Flight System",
+		NoclipText = "Wall Noclip Pass",
+		PlatformText = "Quantum Stand Platform",
+		InstantInteractText = "Instant Proximity Interact",
+		ESPText = "Player Wallhack ESP",
+		MM2ESPText = "Murder Mystery 2 Roles Reveal 🔪",
+		MultiJumpText = "Infinite Air Jump",
+		ArhangelsText = "ARHANGELS TEAM HITBOX",
+		FPSBoostText = "FPS Boost & Anti-Lag 🚀",
+		HitboxText = "Hitbox Size Control",
+		TeleportBtn = "Teleport 🚀",
+		TeleportPlaceholder = "Enter Player Name...",
+		ServerHopBtn = "Server Hop Switcher",
+		UpdatesBtn = "Full Changelog & Features 📜",
+		ThemeBtn = "Theme UI Color 🎨",
+		SavePosBtn = "Save Location 📍",
+		LoadPosBtn = "Teleport Saved 🚀",
+		UpdatesTitleText = "📜 Complete Script Features & History",
 		UpdatesLogText = [[
-⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
+⚡ ADAM & YASEEN VIP CONTROLLER FULL GUIDE ⚡
 
-v2.6 (Current Build):
-• Added Save Position & Teleport Waypoint System.
-• Added Updates & Changelog Window.
-• Restored Classic Glow Theme.
-• Optimized Script Speed & Performance.
-
-v2.0:
-• Added PC / Mobile Compact Modes.
-• Advanced Fly & Walk Speed Controllers.
-• Smart Server Hop & Location Finder.
-
-v1.5:
-• MM2 Role Revealer (Murderer/Sheriff/Innocent).
-• Quantum Platform (Toggle with 'F').
-• Noclip & Infinite Multi-Jump Feature.
-
-v1.0:
-• Main Control Panel Release (AR / EN).
-• Floating ADAM Quick Button.
-• Instant Maintenance Mode Protection.
+📜 LIST OF ALL INTEGRATED FEATURES:
+---------------------------------------------
+1. 🏃 Walk Speed Boost: Custom speed adjustment (1 to 200).
+2. 🦅 Free Flight Glider: Smooth flight matrix with custom speed control.
+3. 👻 Wall Noclip: Walk directly through walls and obstacles.
+4. 🏗️ Quantum Platform: Creates a neon platform below player (Hotkey: F).
+5. ⚡ Instant Interact: Instant proximity prompts activation (0 Hold Delay).
+6. 👁️ Player ESP: Highlights all players across walls.
+7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
+8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
+9. 🎯 ARHANGELS HITBOX: Expand target hitboxes with size adjustment (+ / -).
+10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
+11. 📍 Waypoint Teleport: Save position and teleport via buttons.
+12. 👤 Player Teleport: Teleport directly to any player by entering their name.
+13. 🌐 Server Hop System: Switch to smaller or custom player threshold servers.
+14. 🎨 Theme Color Customizer: Change script main visual color (Green, Red, Blue, Purple).
+15. 📱💻 Dual Platform Support: Optimized layouts for both PC and Mobile devices.
+16. ⚙️ Instant Maintenance System: Safety system managed by Developer Adam.
 ]],
 		Country = "Region: ",
 		CountryLoading = "Region: Syncing...",
 		CountryUnknown = "Region: Restricted",
-		Footer = "Left Ctrl: Hide UI",
+		Footer = "Left Ctrl: Hide / Show UI",
 		ON = "ON",
 		OFF = "OFF",
 		LangBtn = "AR"
 	},
 	AR = {
 		Title = "⚡ سكربت ادم وياسين ⚡",
-		SpeedText = "سرعة المشي",
-		FlyText = "الطيران الحر",
-		NoclipText = "اختراق الجدران",
-		PlatformText = "منصة الارتكاز",
-		InstantInteractText = "التفاعل الفوري",
-		ESPText = "كشف اللاعبين",
+		SpeedText = "سرعة المشي الخارقة",
+		FlyText = "الطيران الحر المتقدم",
+		NoclipText = "اختراق الجدران (Noclip)",
+		PlatformText = "منصة الارتكاز الذكية",
+		InstantInteractText = "التفاعل الفوري السريع",
+		ESPText = "كشف اللاعبين عبر الجدران",
 		MM2ESPText = "كشف أدوار MM2 🔪",
-		MultiJumpText = "القفز المتعدد",
-		ArhangelsText = "ARHANGELS TEAM",
+		MultiJumpText = "القفز المتعدد اللانهائي",
+		ArhangelsText = "توسيع الهيت بوكس (Hitbox)",
 		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
 		ServerHopBtn = "نظام تبديل السيرفرات",
-		UpdatesBtn = "التحديثات السابقة 📜",
+		UpdatesBtn = "كل ما يخص السكربت بالتفصيل 📜",
+		ThemeBtn = "تغيير لون الواجهة 🎨",
 		SavePosBtn = "حفظ المكان الحالي 📍",
-		LoadPosBtn = "الانتقال للمكان المحفوظ 🚀",
-		UpdatesTitleText = "📜 سجل التحديثات والمميزات",
+		LoadPosBtn = "الانتقال للمحفوظ 🚀",
+		UpdatesTitleText = "📜 دليل ومميزات السكربت الشاملة",
 		UpdatesLogText = [[
-⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
+⚡ دليل ومميزات سكربت ادم وياسين VIP الشامل ⚡
 
-v2.6 (التحديث الحالي):
-• إضـافـة نـظام حفظ المـكان والانـتـقال إليه (Waypoints).
-• إضافة نافذة وسجل التحديثات (Changelog).
-• استرجاع التصميم الأساسي الأصلي مع التوهج الهادئ.
-• تحسين سرعة الأزرار والأداء العام للسكربت.
-
-v2.0:
-• وضع الاختيار للكمبيوتر والموبايل (PC/Mobile Compact).
-• تحسين نظام الطيران الحر والتحكم الكامل بالسرعة.
-• نظام السيرفرات الذكي (Server Hop) مع تحديد الدولة.
-
-v1.5:
-• ميزة كشف أدوار Murder Mystery 2 (قاتل/شريف/بريء).
-• ميزة منصة الارتكاز الذكية (Quantum Platform) بحرف F.
-• ميزة اختراق الجدران (Noclip) والقفز المتعدد.
-
-v1.0:
-• إطلاق الواجهة الرئيسية وتنسيق ثنائي اللغة (AR / EN).
-• زر ADAM العائم وقائمة الصيانة الفورية للمطور.
+📜 قائمة بكل ما يحتوي عليه السكربت منذ إنشائه:
+---------------------------------------------
+1. 🏃 زيادة السرعة الخارقة: التحكم الكامل في سرعة المشي من (1 إلى 200).
+2. 🦅 الطيران الحر (Flight): طيران احترافي سلس مع التحكم بالسرعة والأبعاد.
+3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
+4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
+5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
+6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران.
+7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
+8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
+9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بالقيم (+ / -).
+10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
+11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
+12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
+13. 🌐 نظام تبديل السيرفرات (Server Hop): دخول سيرفرات فاضية بنقرة واحدة.
+14. 🎨 مخصص الألوان (Theme Color): خيارات تغيير لون الواجهة (أخضر، أحمر، أزرق، بنفسجي).
+15. 📱💻 دعم جميع الأجهزة: وضع مخصص ومريح للكمبيوتر والموبايل.
+16. ⚙️ نظام الصيانة الحية: نظام حماية وإغلاق فوري يدار بواسطة المطور آدم.
 ]],
 		Country = "الموقع: ",
 		CountryLoading = "الموقع: جاري التحميل...",
 		CountryUnknown = "الموقع: غير متوفر",
-		Footer = "Left Ctrl: إخفاء الواجهة",
+		Footer = "Left Ctrl: إخفاء / إظهار الواجهة",
 		ON = "ON",
 		OFF = "OFF",
 		LangBtn = "EN"
@@ -251,7 +254,7 @@ SelectorCorner.Parent = SelectorGui
 
 local SelectorStroke = Instance.new("UIStroke")
 SelectorStroke.Thickness = 2
-SelectorStroke.Color = Color3.fromRGB(0, 255, 180)
+SelectorStroke.Color = CurrentThemeColor
 SelectorStroke.Parent = SelectorGui
 
 local SelectorTitle = Instance.new("TextLabel")
@@ -292,9 +295,9 @@ MobileCorner.CornerRadius = UDim.new(0, 8)
 MobileCorner.Parent = MobileBtn
 
 ---------------------------------------------------------
--- إعداد اللوحة الرئيسية (تم زيادة الطول لتستوعب الأزرار الجديدة)
+-- إعداد اللوحة الرئيسية
 ---------------------------------------------------------
-local BaseWidth, BaseHeight = 310, 930
+local BaseWidth, BaseHeight = 310, 970
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
@@ -313,14 +316,14 @@ MainCorner.Parent = MainFrame
 
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Thickness = 2
-MainStroke.Color = Color3.fromRGB(0, 255, 180)
+MainStroke.Color = CurrentThemeColor
 MainStroke.Parent = MainFrame
 
 local GradientStroke = Instance.new("UIGradient")
 GradientStroke.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 170)),
+	ColorSequenceKeypoint.new(0, CurrentThemeColor),
 	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 100, 255)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 210, 255))
+	ColorSequenceKeypoint.new(1, CurrentThemeColor)
 })
 GradientStroke.Parent = MainStroke
 
@@ -345,15 +348,8 @@ ToggleCorner.Parent = ToggleBtn
 
 local ToggleStroke = Instance.new("UIStroke")
 ToggleStroke.Thickness = 2.5
-ToggleStroke.Color = Color3.fromRGB(0, 255, 170)
+ToggleStroke.Color = CurrentThemeColor
 ToggleStroke.Parent = ToggleBtn
-
-local ToggleGradient = Instance.new("UIGradient")
-ToggleGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 170)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 150, 255))
-})
-ToggleGradient.Parent = ToggleStroke
 
 local FlagIcon = Instance.new("ImageLabel")
 FlagIcon.Size = UDim2.new(0, 28, 0, 28)
@@ -382,11 +378,31 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
+-- تطبيق لون الثيم الجديد عالمياً على جميع العناصر
+---------------------------------------------------------
+local function ApplyThemeColor(color)
+	CurrentThemeColor = color
+	MainStroke.Color = color
+	ToggleStroke.Color = color
+	if SelectorStroke then SelectorStroke.Color = color end
+	if UpdatesFrameStroke then UpdatesFrameStroke.Color = color end
+	if TitleLabel then TitleLabel.TextColor3 = color end
+	if UpdatesTitle then UpdatesTitle.TextColor3 = color end
+	if ThemeTitleText then ThemeTitleText.TextColor3 = color end
+	
+	GradientStroke.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, color),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 120, 255)),
+		ColorSequenceKeypoint.new(1, color)
+	})
+end
+
+---------------------------------------------------------
 -- الأحداث بعد اختيار نوع الجهاز
 ---------------------------------------------------------
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 310, 930
+	BaseWidth, BaseHeight = 310, 970
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
@@ -394,12 +410,11 @@ end)
 
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 265, 830
+	BaseWidth, BaseHeight = 265, 870
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
 end)
----------------------------------------------------------
 
 -- Title Header Frame
 local TitleFrame = Instance.new("Frame")
@@ -418,7 +433,7 @@ TitleLabel.Size = UDim2.new(0.58, 0, 1, 0)
 TitleLabel.Position = UDim2.new(0.04, 0, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = Translations[CurrentLang].Title
-TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 170)
+TitleLabel.TextColor3 = CurrentThemeColor
 TitleLabel.TextSize = 11
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -536,6 +551,7 @@ LangBtnRef.MouseButton1Click:Connect(function()
 	TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
 	ServerHopPanelBtnRef.Text = Translations[CurrentLang].ServerHopBtn
 	UpdatesPanelBtnRef.Text = Translations[CurrentLang].UpdatesBtn
+	ThemePanelBtnRef.Text = Translations[CurrentLang].ThemeBtn
 	SavePosBtnRef.Text = Translations[CurrentLang].SavePosBtn
 	LoadPosBtnRef.Text = Translations[CurrentLang].LoadPosBtn
 	UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
@@ -1146,6 +1162,24 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
+-- دالة الانتقال للمكان المحفوظ
+local function TeleportToSavedWaypoint()
+	if SavedPosition then
+		local char = LocalPlayer.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			char.HumanoidRootPart.CFrame = SavedPosition + Vector3.new(0, 3, 0)
+		end
+	else
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "تنبيه ⚠️",
+				Text = "لم تقم بحفظ أي مكان بعد!",
+				Duration = 3
+			})
+		end)
+	end
+end
+
 -- 12. Save Position & Teleport to Saved Position Buttons (Y: 504)
 SavePosBtnRef = Instance.new("TextButton")
 SavePosBtnRef.Size = UDim2.new(0.43, 0, 0, 32)
@@ -1168,7 +1202,7 @@ LoadPosBtnRef.Position = UDim2.new(0.52, 0, 0, 504)
 LoadPosBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 110)
 LoadPosBtnRef.BackgroundTransparency = 0.35
 LoadPosBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadPosBtnRef.TextSize = 10
+LoadPosBtnRef.TextSize = 9
 LoadPosBtnRef.Font = Enum.Font.GothamBold
 LoadPosBtnRef.Text = Translations[CurrentLang].LoadPosBtn
 LoadPosBtnRef.Parent = MainFrame
@@ -1184,29 +1218,14 @@ SavePosBtnRef.MouseButton1Click:Connect(function()
 		pcall(function()
 			StarterGui:SetCore("SendNotification", {
 				Title = "تم الحفظ 📍",
-				Text = "تم حفظ المكان الحالي بنجاح يا باشمهندس آدم",
+				Text = "تم حفظ المكان! اضغط على زر الانتقال للمحفوظ للرجوع إليه",
 				Duration = 3
 			})
 		end)
 	end
 end)
 
-LoadPosBtnRef.MouseButton1Click:Connect(function()
-	if SavedPosition then
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			char.HumanoidRootPart.CFrame = SavedPosition + Vector3.new(0, 3, 0)
-		end
-	else
-		pcall(function()
-			StarterGui:SetCore("SendNotification", {
-				Title = "تنبيه ⚠️",
-				Text = "لم تقم بحفظ أي مكان بعد!",
-				Duration = 3
-			})
-		end)
-	end
-end)
+LoadPosBtnRef.MouseButton1Click:Connect(TeleportToSavedWaypoint)
 
 -- 13. Teleport to Player Section (Y: 544)
 TeleportInputRef = Instance.new("TextBox")
@@ -1368,6 +1387,7 @@ AutoHopCorner.Parent = AutoHopBtn
 ServerHopPanelBtnRef.MouseButton1Click:Connect(function()
 	ServerHopFrame.Visible = not ServerHopFrame.Visible
 	if UpdatesFrame then UpdatesFrame.Visible = false end
+	if ThemeFrame then ThemeFrame.Visible = false end
 end)
 
 ServerHopCloseBtn.MouseButton1Click:Connect(function()
@@ -1416,10 +1436,146 @@ AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
 end)
 
--- 15. Updates Panel Button (Y: 624)
+-- 15. Theme Color Switcher Button (Y: 624)
+ThemePanelBtnRef = Instance.new("TextButton")
+ThemePanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
+ThemePanelBtnRef.Position = UDim2.new(0.05, 0, 0, 624)
+ThemePanelBtnRef.BackgroundColor3 = Color3.fromRGB(140, 60, 200)
+ThemePanelBtnRef.BackgroundTransparency = 0.35
+ThemePanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemePanelBtnRef.TextSize = 11
+ThemePanelBtnRef.Font = Enum.Font.GothamSemibold
+ThemePanelBtnRef.Text = Translations[CurrentLang].ThemeBtn
+ThemePanelBtnRef.Parent = MainFrame
+
+local ThemeCorner = Instance.new("UICorner")
+ThemeCorner.CornerRadius = UDim.new(0, 6)
+ThemeCorner.Parent = ThemePanelBtnRef
+
+-- Theme Selection Panel Frame
+ThemeFrame = Instance.new("Frame")
+ThemeFrame.Size = UDim2.new(0, 280, 0, 200)
+ThemeFrame.Position = UDim2.new(1.05, 0, 0, 0)
+ThemeFrame.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
+ThemeFrame.BackgroundTransparency = 0.05
+ThemeFrame.BorderSizePixel = 0
+ThemeFrame.Visible = false
+ThemeFrame.Parent = MainFrame
+
+local ThemeFrameCorner = Instance.new("UICorner")
+ThemeFrameCorner.CornerRadius = UDim.new(0, 12)
+ThemeFrameCorner.Parent = ThemeFrame
+
+local ThemeFrameStroke = Instance.new("UIStroke")
+ThemeFrameStroke.Thickness = 2
+ThemeFrameStroke.Color = CurrentThemeColor
+ThemeFrameStroke.Parent = ThemeFrame
+
+ThemeCloseBtn = Instance.new("TextButton")
+ThemeCloseBtn.Size = UDim2.new(0, 26, 0, 26)
+ThemeCloseBtn.Position = UDim2.new(0.88, 0, 0.04, 0)
+ThemeCloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+ThemeCloseBtn.BackgroundTransparency = 0.3
+ThemeCloseBtn.Text = "X"
+ThemeCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemeCloseBtn.TextSize = 11
+ThemeCloseBtn.Font = Enum.Font.GothamBold
+ThemeCloseBtn.Parent = ThemeFrame
+
+local ThemeCloseCorner = Instance.new("UICorner")
+ThemeCloseCorner.CornerRadius = UDim.new(0, 6)
+ThemeCloseCorner.Parent = ThemeCloseBtn
+
+ThemeTitleText = Instance.new("TextLabel")
+ThemeTitleText.Size = UDim2.new(0.8, 0, 0, 30)
+ThemeTitleText.Position = UDim2.new(0.05, 0, 0.04, 0)
+ThemeTitleText.BackgroundTransparency = 1
+ThemeTitleText.Text = "🎨 اختر لون الواجهة المفضل"
+ThemeTitleText.TextColor3 = CurrentThemeColor
+ThemeTitleText.TextSize = 12
+ThemeTitleText.Font = Enum.Font.GothamBold
+ThemeTitleText.TextXAlignment = Enum.TextXAlignment.Left
+ThemeTitleText.Parent = ThemeFrame
+
+-- Green Theme Button
+ThemeGreenBtn = Instance.new("TextButton")
+ThemeGreenBtn.Size = UDim2.new(0.42, 0, 0, 36)
+ThemeGreenBtn.Position = UDim2.new(0.05, 0, 0.28, 0)
+ThemeGreenBtn.BackgroundColor3 = Color3.fromRGB(0, 220, 140)
+ThemeGreenBtn.Text = "🟢 أخضر نيون"
+ThemeGreenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemeGreenBtn.TextSize = 11
+ThemeGreenBtn.Font = Enum.Font.GothamBold
+ThemeGreenBtn.Parent = ThemeFrame
+
+local GreenCorner = Instance.new("UICorner")
+GreenCorner.CornerRadius = UDim.new(0, 8)
+GreenCorner.Parent = ThemeGreenBtn
+
+-- Red Theme Button
+ThemeRedBtn = Instance.new("TextButton")
+ThemeRedBtn.Size = UDim2.new(0.42, 0, 0, 36)
+ThemeRedBtn.Position = UDim2.new(0.53, 0, 0.28, 0)
+ThemeRedBtn.BackgroundColor3 = Color3.fromRGB(230, 40, 60)
+ThemeRedBtn.Text = "🔴 أحمر ناري"
+ThemeRedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemeRedBtn.TextSize = 11
+ThemeRedBtn.Font = Enum.Font.GothamBold
+ThemeRedBtn.Parent = ThemeFrame
+
+local RedCorner = Instance.new("UICorner")
+RedCorner.CornerRadius = UDim.new(0, 8)
+RedCorner.Parent = ThemeRedBtn
+
+-- Blue Theme Button
+ThemeBlueBtn = Instance.new("TextButton")
+ThemeBlueBtn.Size = UDim2.new(0.42, 0, 0, 36)
+ThemeBlueBtn.Position = UDim2.new(0.05, 0, 0.58, 0)
+ThemeBlueBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 255)
+ThemeBlueBtn.Text = "🔵 أزرق سايبر"
+ThemeBlueBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemeBlueBtn.TextSize = 11
+ThemeBlueBtn.Font = Enum.Font.GothamBold
+ThemeBlueBtn.Parent = ThemeFrame
+
+local BlueCorner = Instance.new("UICorner")
+BlueCorner.CornerRadius = UDim.new(0, 8)
+BlueCorner.Parent = ThemeBlueBtn
+
+-- Purple Theme Button
+ThemePurpleBtn = Instance.new("TextButton")
+ThemePurpleBtn.Size = UDim2.new(0.42, 0, 0, 36)
+ThemePurpleBtn.Position = UDim2.new(0.53, 0, 0.58, 0)
+ThemePurpleBtn.BackgroundColor3 = Color3.fromRGB(160, 60, 240)
+ThemePurpleBtn.Text = "🟣 بنفسجي ملكي"
+ThemePurpleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ThemePurpleBtn.TextSize = 11
+ThemePurpleBtn.Font = Enum.Font.GothamBold
+ThemePurpleBtn.Parent = ThemeFrame
+
+local PurpleCorner = Instance.new("UICorner")
+PurpleCorner.CornerRadius = UDim.new(0, 8)
+PurpleCorner.Parent = ThemePurpleBtn
+
+ThemeGreenBtn.MouseButton1Click:Connect(function() ApplyThemeColor(Color3.fromRGB(0, 255, 180)) end)
+ThemeRedBtn.MouseButton1Click:Connect(function() ApplyThemeColor(Color3.fromRGB(255, 50, 70)) end)
+ThemeBlueBtn.MouseButton1Click:Connect(function() ApplyThemeColor(Color3.fromRGB(0, 170, 255)) end)
+ThemePurpleBtn.MouseButton1Click:Connect(function() ApplyThemeColor(Color3.fromRGB(170, 70, 255)) end)
+
+ThemePanelBtnRef.MouseButton1Click:Connect(function()
+	ThemeFrame.Visible = not ThemeFrame.Visible
+	if ServerHopFrame then ServerHopFrame.Visible = false end
+	if UpdatesFrame then UpdatesFrame.Visible = false end
+end)
+
+ThemeCloseBtn.MouseButton1Click:Connect(function()
+	ThemeFrame.Visible = false
+end)
+
+-- 16. Updates Panel Button (Y: 664)
 UpdatesPanelBtnRef = Instance.new("TextButton")
 UpdatesPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-UpdatesPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 624)
+UpdatesPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 664)
 UpdatesPanelBtnRef.BackgroundColor3 = Color3.fromRGB(0, 150, 180)
 UpdatesPanelBtnRef.BackgroundTransparency = 0.35
 UpdatesPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1434,7 +1590,7 @@ UpdatesCorner.Parent = UpdatesPanelBtnRef
 
 -- Updates Window / Frame
 UpdatesFrame = Instance.new("Frame")
-UpdatesFrame.Size = UDim2.new(0, 310, 0, 320)
+UpdatesFrame.Size = UDim2.new(0, 310, 0, 340)
 UpdatesFrame.Position = UDim2.new(1.05, 0, 0, 0)
 UpdatesFrame.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
 UpdatesFrame.BackgroundTransparency = 0.05
@@ -1446,9 +1602,9 @@ local UpdatesFrameCorner = Instance.new("UICorner")
 UpdatesFrameCorner.CornerRadius = UDim.new(0, 12)
 UpdatesFrameCorner.Parent = UpdatesFrame
 
-local UpdatesFrameStroke = Instance.new("UIStroke")
+UpdatesFrameStroke = Instance.new("UIStroke")
 UpdatesFrameStroke.Thickness = 2
-UpdatesFrameStroke.Color = Color3.fromRGB(0, 255, 180)
+UpdatesFrameStroke.Color = CurrentThemeColor
 UpdatesFrameStroke.Parent = UpdatesFrame
 
 UpdatesCloseBtn = Instance.new("TextButton")
@@ -1471,26 +1627,26 @@ UpdatesTitle.Size = UDim2.new(0.8, 0, 0, 30)
 UpdatesTitle.Position = UDim2.new(0.05, 0, 0.03, 0)
 UpdatesTitle.BackgroundTransparency = 1
 UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
-UpdatesTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
-UpdatesTitle.TextSize = 13
+UpdatesTitle.TextColor3 = CurrentThemeColor
+UpdatesTitle.TextSize = 12
 UpdatesTitle.Font = Enum.Font.GothamBold
 UpdatesTitle.TextXAlignment = Enum.TextXAlignment.Left
 UpdatesTitle.Parent = UpdatesFrame
 
 UpdatesScroll = Instance.new("ScrollingFrame")
-UpdatesScroll.Size = UDim2.new(0.9, 0, 0, 260)
-UpdatesScroll.Position = UDim2.new(0.05, 0, 0.14, 0)
+UpdatesScroll.Size = UDim2.new(0.9, 0, 0, 280)
+UpdatesScroll.Position = UDim2.new(0.05, 0, 0.13, 0)
 UpdatesScroll.BackgroundTransparency = 1
 UpdatesScroll.BorderSizePixel = 0
 UpdatesScroll.ScrollBarThickness = 5
-UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 580)
+UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 650)
 UpdatesScroll.Parent = UpdatesFrame
 
 UpdatesTextLabel = Instance.new("TextLabel")
-UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 570)
+UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 640)
 UpdatesTextLabel.BackgroundTransparency = 1
 UpdatesTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-UpdatesTextLabel.TextSize = 12
+UpdatesTextLabel.TextSize = 11
 UpdatesTextLabel.Font = Enum.Font.GothamBold
 UpdatesTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 UpdatesTextLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1501,16 +1657,17 @@ UpdatesTextLabel.Parent = UpdatesScroll
 UpdatesPanelBtnRef.MouseButton1Click:Connect(function()
 	UpdatesFrame.Visible = not UpdatesFrame.Visible
 	if ServerHopFrame then ServerHopFrame.Visible = false end
+	if ThemeFrame then ThemeFrame.Visible = false end
 end)
 
 UpdatesCloseBtn.MouseButton1Click:Connect(function()
 	UpdatesFrame.Visible = false
 end)
 
--- 16. Region / Country Label (Y: 704)
+-- 17. Region / Country Label (Y: 744)
 CountryLabelRef = Instance.new("TextLabel")
 CountryLabelRef.Size = UDim2.new(0.9, 0, 0, 28)
-CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 704)
+CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 744)
 CountryLabelRef.BackgroundTransparency = 1
 CountryLabelRef.Text = Translations[CurrentLang].CountryLoading
 CountryLabelRef.TextColor3 = Color3.fromRGB(0, 210, 255)
@@ -1535,11 +1692,10 @@ task.spawn(function()
 	end
 end)
 
--- 17. Footer Label (Y: 742)
+-- 18. Footer Label (Y: 780)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
-FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 742)
-FooterLabelRef.BackgroundTransparency = 0
+FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 780)
 FooterLabelRef.BackgroundTransparency = 1
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
@@ -1548,8 +1704,10 @@ FooterLabelRef.Font = Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
 FooterLabelRef.Parent = MainFrame
 
--- Keyboard Toggle (LeftControl for UI)
+-- Keyboard Shortcuts (LeftControl for UI Toggle)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	
 	if input.KeyCode == Enum.KeyCode.LeftControl then
 		MainFrame.Visible = not MainFrame.Visible
 	end
