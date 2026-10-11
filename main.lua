@@ -11,7 +11,7 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = true  
+local ScriptEnabled = false  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة الفورية
