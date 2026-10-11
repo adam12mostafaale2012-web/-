@@ -11,7 +11,7 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = true  
+local ScriptEnabled = false  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة الفورية
@@ -60,7 +60,6 @@ local MM2ESPEnabled = false
 local MultiJumpEnabled = false
 local ArhangelsTeamEnabled = false
 local FPSBoostEnabled = false
-local AntiAimEnabled = false
 local HitboxSizeVal = 4
 
 local WalkSpeedVal = 50
@@ -79,36 +78,21 @@ local HopThreshold = 1
 
 -- Country Name Translation Dictionary
 local CountryNamesAR = {
-	["EG"] = "مصر",
-	["SA"] = "المملكة العربية السعودية",
-	["AE"] = "الإمارات العربية المتحدة",
-	["KW"] = "الكويت",
-	["QA"] = "قطر",
-	["BH"] = "البحرين",
-	["OM"] = "سلطنة عمان",
-	["JO"] = "الأردن",
-	["IQ"] = "العراق",
-	["LB"] = "لبنان",
-	["SY"] = "سوريا",
-	["MA"] = "المغرب",
-	["DZ"] = "الجزائر",
-	["TN"] = "تونس",
-	["LY"] = "ليبيا",
-	["SD"] = "السودان",
-	["YE"] = "اليمن",
-	["US"] = "الولايات المتحدة الأمريكية",
-	["GB"] = "المملكة المتحدة",
-	["FR"] = "فرنسا",
-	["DE"] = "ألمانيا",
-	["TR"] = "تركيا"
+	["EG"] = "مصر", ["SA"] = "المملكة العربية السعودية", ["AE"] = "الإمارات العربية المتحدة",
+	["KW"] = "الكويت", ["QA"] = "قطر", ["BH"] = "البحرين", ["OM"] = "سلطنة عمان",
+	["JO"] = "الأردن", ["IQ"] = "العراق", ["LB"] = "لبنان", ["SY"] = "سوريا",
+	["MA"] = "المغرب", ["DZ"] = "الجزائر", ["TN"] = "تونس", ["LY"] = "ليبيا",
+	["SD"] = "السودان", ["YE"] = "اليمن", ["US"] = "الولايات المتحدة الأمريكية",
+	["GB"] = "المملكة المتحدة", ["FR"] = "فرنسا", ["DE"] = "ألمانيا", ["TR"] = "تركيا"
 }
 
 -- UI References
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
-local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef
+local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef
 local CountryLabelRef, FooterLabelRef
-local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef, AntiAimBtnRef
+local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
+local UpdatesFrame, UpdatesCloseBtn, UpdatesTitle, UpdatesTextLabel, UpdatesScroll
 
 -- Translations Setup
 local Translations = {
@@ -124,11 +108,35 @@ local Translations = {
 		MultiJumpText = "Multi-Jump",
 		ArhangelsText = "ARHANGELS TEAM",
 		FPSBoostText = "FPS Boost (Anti-Lag)",
-		AntiAimText = "Anti-Aimbot Shield",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "Teleport",
 		TeleportPlaceholder = "Player Name...",
 		ServerHopBtn = "Server Hop System",
+		UpdatesBtn = "Changelog / Updates 📜",
+		UpdatesTitleText = "📜 Script Changelog & Features",
+		UpdatesLogText = [[
+⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
+
+v2.5 (Current Build):
+• Added Updates & Changelog Window.
+• Restored Classic Glow Theme.
+• Optimized Script Speed & Performance.
+
+v2.0:
+• Added PC / Mobile Compact Modes.
+• Advanced Fly & Walk Speed Controllers.
+• Smart Server Hop & Location Finder.
+
+v1.5:
+• MM2 Role Revealer (Murderer/Sheriff/Innocent).
+• Quantum Platform (Toggle with 'F').
+• Noclip & Infinite Multi-Jump Feature.
+
+v1.0:
+• Main Control Panel Release (AR / EN).
+• Floating ADAM Quick Button.
+• Instant Maintenance Mode Protection.
+]],
 		Country = "Region: ",
 		CountryLoading = "Region: Syncing...",
 		CountryUnknown = "Region: Restricted",
@@ -149,11 +157,34 @@ local Translations = {
 		MultiJumpText = "القفز المتعدد",
 		ArhangelsText = "ARHANGELS TEAM",
 		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
-		AntiAimText = "درع مضاد الإيم بوت (Anti-Aim) 🛡️",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
 		ServerHopBtn = "نظام تبديل السيرفرات",
+		UpdatesBtn = "التحديثات السابقة 📜",
+		UpdatesTitleText = "📜 سجل التحديثات والمميزات",
+		UpdatesLogText = [[
+⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
+
+v2.5 (التحديث الحالي):
+• إضـافـة نـافـذة وسـجـل الـتـحـديـثـات (Changelog).
+• استرجاع التصميم الأساسي الأصلي مع التوهج الهادئ.
+• تحسين سرعة الأزرار والأداء العام للسكربت.
+
+v2.0:
+• وضع الاختيار للكمبيوتر والموبايل (PC/Mobile Compact).
+• تحسين نظام الطيران الحر والتحكم الكامل بالسرعة.
+• نظام السيرفرات الذكي (Server Hop) مع تحديد الدولة.
+
+v1.5:
+• ميزة كشف أدوار Murder Mystery 2 (قاتل/شريف/بريء).
+• ميزة منصة الارتكاز الذكية (Quantum Platform) بحرف F.
+• ميزة اختراق الجدران (Noclip) والقفز المتعدد.
+
+v1.0:
+• إطلاق الواجهة الرئيسية وتنسيق ثنائي اللغة (AR / EN).
+• زر ADAM العائم وقائمة الصيانة الفورية للمطور.
+]],
 		Country = "الموقع: ",
 		CountryLoading = "الموقع: جاري التحميل...",
 		CountryUnknown = "الموقع: غير متوفر",
@@ -427,7 +458,6 @@ local function CleanScript()
 	ArhangelsTeamEnabled = false
 	AutoHopEnabled = false
 	FPSBoostEnabled = false
-	AntiAimEnabled = false
 	
 	pcall(function()
 		Lighting.GlobalShadows = true
@@ -486,7 +516,7 @@ task.spawn(function()
 end)
 
 local UIUpdaters = {}
-local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI, updateAntiAimUI
+local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
@@ -495,6 +525,9 @@ LangBtnRef.MouseButton1Click:Connect(function()
 	TeleportInputRef.PlaceholderText = Translations[CurrentLang].TeleportPlaceholder
 	TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
 	ServerHopPanelBtnRef.Text = Translations[CurrentLang].ServerHopBtn
+	UpdatesPanelBtnRef.Text = Translations[CurrentLang].UpdatesBtn
+	UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
+	UpdatesTextLabel.Text = Translations[CurrentLang].UpdatesLogText
 	FooterLabelRef.Text = Translations[CurrentLang].Footer
 	
 	for _, updater in ipairs(UIUpdaters) do
@@ -1033,52 +1066,10 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 end)
 updateFPSBoostUI()
 
--- 11. Anti-Aim / Anti-Aimbot Safe Shield Button (Y: 464)
-AntiAimBtnRef = Instance.new("TextButton")
-AntiAimBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-AntiAimBtnRef.Position = UDim2.new(0.05, 0, 0, 464)
-AntiAimBtnRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
-AntiAimBtnRef.BackgroundTransparency = 0.35
-AntiAimBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
-AntiAimBtnRef.TextSize = 10
-AntiAimBtnRef.Font = Enum.Font.GothamSemibold
-AntiAimBtnRef.Parent = MainFrame
-
-local AntiAimCorner = Instance.new("UICorner")
-AntiAimCorner.CornerRadius = UDim.new(0, 6)
-AntiAimCorner.Parent = AntiAimBtnRef
-
-updateAntiAimUI = function()
-	local lang = Translations[CurrentLang]
-	local titleName = (CurrentLang == "AR") and "مضاد الإيم بوت (Anti-Aim)" or "Anti-Aimbot"
-	local status = AntiAimEnabled and lang.ON or lang.OFF
-	AntiAimBtnRef.Text = titleName .. ": " .. status
-	AntiAimBtnRef.BackgroundColor3 = AntiAimEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
-	AntiAimBtnRef.BackgroundTransparency = 0.35
-end
-table.insert(UIUpdaters, updateAntiAimUI)
-
-AntiAimBtnRef.MouseButton1Click:Connect(function()
-	AntiAimEnabled = not AntiAimEnabled
-	updateAntiAimUI()
-end)
-
--- الحل الآمن تماماً: تشتيت إيم بوت الخصوم عبر تغيير سرعة وزط الرأس طفيفاً دون تحريك الجسم أو الموت
-table.insert(Connections, RunService.RenderStepped:Connect(function()
-	if AntiAimEnabled then
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("Head") then
-			local head = char.Head
-			head.AssemblyLinearVelocity = Vector3.new(math.random(-40, 40), math.random(5, 20), math.random(-40, 40))
-		end
-	end
-end))
-updateAntiAimUI()
-
--- 12. Hitbox Size Section (Y: 504)
+-- 11. Hitbox Size Section (Y: 464)
 HitboxLabelRef = Instance.new("TextLabel")
 HitboxLabelRef.Size = UDim2.new(0.35, 0, 0, 32)
-HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 504)
+HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 464)
 HitboxLabelRef.BackgroundTransparency = 1
 HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
 HitboxLabelRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1089,7 +1080,7 @@ HitboxLabelRef.Parent = MainFrame
 
 local HitboxMinusBtn = Instance.new("TextButton")
 HitboxMinusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 504)
+HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 464)
 HitboxMinusBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 HitboxMinusBtn.BackgroundTransparency = 0.3
 HitboxMinusBtn.Text = "-"
@@ -1104,7 +1095,7 @@ MinusCorner.Parent = HitboxMinusBtn
 
 local HitboxPlusBtn = Instance.new("TextButton")
 HitboxPlusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 504)
+HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 464)
 HitboxPlusBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 HitboxPlusBtn.BackgroundTransparency = 0.3
 HitboxPlusBtn.Text = "+"
@@ -1143,10 +1134,10 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
--- 13. Teleport to Player Section (Y: 544)
+-- 12. Teleport to Player Section (Y: 504)
 TeleportInputRef = Instance.new("TextBox")
 TeleportInputRef.Size = UDim2.new(0.58, 0, 0, 32)
-TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 544)
+TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 504)
 TeleportInputRef.BackgroundTransparency = 0.4
 TeleportInputRef.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 TeleportInputRef.Text = ""
@@ -1162,7 +1153,7 @@ TeleportInputCorner.Parent = TeleportInputRef
 
 TeleportBtnRef = Instance.new("TextButton")
 TeleportBtnRef.Size = UDim2.new(0.29, 0, 0, 32)
-TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 544)
+TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 504)
 TeleportBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 220)
 TeleportBtnRef.BackgroundTransparency = 0.3
 TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
@@ -1193,10 +1184,10 @@ TeleportBtnRef.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 14. Server Hop System Button (Y: 584)
+-- 13. Server Hop System Button (Y: 544)
 ServerHopPanelBtnRef = Instance.new("TextButton")
 ServerHopPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 584)
+ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 544)
 ServerHopPanelBtnRef.BackgroundColor3 = Color3.fromRGB(80, 50, 180)
 ServerHopPanelBtnRef.BackgroundTransparency = 0.35
 ServerHopPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1302,6 +1293,7 @@ AutoHopCorner.Parent = AutoHopBtn
 
 ServerHopPanelBtnRef.MouseButton1Click:Connect(function()
 	ServerHopFrame.Visible = not ServerHopFrame.Visible
+	if UpdatesFrame then UpdatesFrame.Visible = false end
 end)
 
 ServerHopCloseBtn.MouseButton1Click:Connect(function()
@@ -1348,6 +1340,97 @@ AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopEnabled = not AutoHopEnabled
 	AutoHopBtn.Text = AutoHopEnabled and "Auto Hop: ON" or "Auto Hop: OFF"
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
+end)
+
+-- 14. Updates Panel Button (Y: 584)
+UpdatesPanelBtnRef = Instance.new("TextButton")
+UpdatesPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
+UpdatesPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 584)
+UpdatesPanelBtnRef.BackgroundColor3 = Color3.fromRGB(0, 150, 180)
+UpdatesPanelBtnRef.BackgroundTransparency = 0.35
+UpdatesPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpdatesPanelBtnRef.TextSize = 11
+UpdatesPanelBtnRef.Font = Enum.Font.GothamSemibold
+UpdatesPanelBtnRef.Text = Translations[CurrentLang].UpdatesBtn
+UpdatesPanelBtnRef.Parent = MainFrame
+
+local UpdatesCorner = Instance.new("UICorner")
+UpdatesCorner.CornerRadius = UDim.new(0, 6)
+UpdatesCorner.Parent = UpdatesPanelBtnRef
+
+-- Updates Window / Frame (كبرنا الحجم والخط ليكون أوضح)
+UpdatesFrame = Instance.new("Frame")
+UpdatesFrame.Size = UDim2.new(0, 310, 0, 320)
+UpdatesFrame.Position = UDim2.new(1.05, 0, 0, 0)
+UpdatesFrame.BackgroundColor3 = Color3.fromRGB(15, 18, 28)
+UpdatesFrame.BackgroundTransparency = 0.05
+UpdatesFrame.BorderSizePixel = 0
+UpdatesFrame.Visible = false
+UpdatesFrame.Parent = MainFrame
+
+local UpdatesFrameCorner = Instance.new("UICorner")
+UpdatesFrameCorner.CornerRadius = UDim.new(0, 12)
+UpdatesFrameCorner.Parent = UpdatesFrame
+
+local UpdatesFrameStroke = Instance.new("UIStroke")
+UpdatesFrameStroke.Thickness = 2
+UpdatesFrameStroke.Color = Color3.fromRGB(0, 255, 180)
+UpdatesFrameStroke.Parent = UpdatesFrame
+
+UpdatesCloseBtn = Instance.new("TextButton")
+UpdatesCloseBtn.Size = UDim2.new(0, 28, 0, 28)
+UpdatesCloseBtn.Position = UDim2.new(0.88, 0, 0.03, 0)
+UpdatesCloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+UpdatesCloseBtn.BackgroundTransparency = 0.3
+UpdatesCloseBtn.Text = "X"
+UpdatesCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpdatesCloseBtn.TextSize = 12
+UpdatesCloseBtn.Font = Enum.Font.GothamBold
+UpdatesCloseBtn.Parent = UpdatesFrame
+
+local UpdatesCloseCorner = Instance.new("UICorner")
+UpdatesCloseCorner.CornerRadius = UDim.new(0, 6)
+UpdatesCloseCorner.Parent = UpdatesCloseBtn
+
+UpdatesTitle = Instance.new("TextLabel")
+UpdatesTitle.Size = UDim2.new(0.8, 0, 0, 30)
+UpdatesTitle.Position = UDim2.new(0.05, 0, 0.03, 0)
+UpdatesTitle.BackgroundTransparency = 1
+UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
+UpdatesTitle.TextColor3 = Color3.fromRGB(0, 255, 170)
+UpdatesTitle.TextSize = 13
+UpdatesTitle.Font = Enum.Font.GothamBold
+UpdatesTitle.TextXAlignment = Enum.TextXAlignment.Left
+UpdatesTitle.Parent = UpdatesFrame
+
+UpdatesScroll = Instance.new("ScrollingFrame")
+UpdatesScroll.Size = UDim2.new(0.9, 0, 0, 260)
+UpdatesScroll.Position = UDim2.new(0.05, 0, 0.14, 0)
+UpdatesScroll.BackgroundTransparency = 1
+UpdatesScroll.BorderSizePixel = 0
+UpdatesScroll.ScrollBarThickness = 5
+UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 550) -- كبرنا المسافة عشان الخط الكبير
+UpdatesScroll.Parent = UpdatesFrame
+
+UpdatesTextLabel = Instance.new("TextLabel")
+UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 540)
+UpdatesTextLabel.BackgroundTransparency = 1
+UpdatesTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpdatesTextLabel.TextSize = 12 -- تكبير حجم الخط لسهولة القراءة
+UpdatesTextLabel.Font = Enum.Font.GothamBold
+UpdatesTextLabel.TextXAlignment = Enum.TextXAlignment.Left
+UpdatesTextLabel.TextYAlignment = Enum.TextYAlignment.Top
+UpdatesTextLabel.TextWrapped = true
+UpdatesTextLabel.Text = Translations[CurrentLang].UpdatesLogText
+UpdatesTextLabel.Parent = UpdatesScroll
+
+UpdatesPanelBtnRef.MouseButton1Click:Connect(function()
+	UpdatesFrame.Visible = not UpdatesFrame.Visible
+	if ServerHopFrame then ServerHopFrame.Visible = false end
+end)
+
+UpdatesCloseBtn.MouseButton1Click:Connect(function()
+	UpdatesFrame.Visible = false
 end)
 
 -- 15. Region / Country Label (Y: 664)
