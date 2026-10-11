@@ -60,6 +60,7 @@ local MM2ESPEnabled = false
 local MultiJumpEnabled = false
 local ArhangelsTeamEnabled = false
 local FPSBoostEnabled = false
+local AntiAimEnabled = false
 local HitboxSizeVal = 4
 
 local WalkSpeedVal = 50
@@ -106,7 +107,7 @@ local CountryNamesAR = {
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
 local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef
 local CountryLabelRef, FooterLabelRef
-local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
+local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef, AntiAimBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
 
 -- Translations Setup
@@ -123,6 +124,7 @@ local Translations = {
 		MultiJumpText = "Multi-Jump",
 		ArhangelsText = "ARHANGELS TEAM",
 		FPSBoostText = "FPS Boost (Anti-Lag)",
+		AntiAimText = "Anti-Aimbot Shield",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "Teleport",
 		TeleportPlaceholder = "Player Name...",
@@ -147,6 +149,7 @@ local Translations = {
 		MultiJumpText = "القفز المتعدد",
 		ArhangelsText = "ARHANGELS TEAM",
 		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
+		AntiAimText = "درع مضاد الإيم بوت (Anti-Aim) 🛡️",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
@@ -250,7 +253,7 @@ MobileCorner.Parent = MobileBtn
 ---------------------------------------------------------
 -- إعداد اللوحة الرئيسية
 ---------------------------------------------------------
-local BaseWidth, BaseHeight = 310, 830
+local BaseWidth, BaseHeight = 310, 880
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
@@ -342,7 +345,7 @@ end)
 ---------------------------------------------------------
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 310, 830
+	BaseWidth, BaseHeight = 310, 880
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
@@ -350,7 +353,7 @@ end)
 
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 265, 740
+	BaseWidth, BaseHeight = 265, 780
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
@@ -423,6 +426,14 @@ local function CleanScript()
 	MultiJumpEnabled = false
 	ArhangelsTeamEnabled = false
 	AutoHopEnabled = false
+	FPSBoostEnabled = false
+	AntiAimEnabled = false
+	
+	-- استعادة الإعدادات الأصلية للإضاءة والبيئة عند الإغلاق
+	pcall(function()
+		Lighting.GlobalShadows = true
+		settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+	end)
 	
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer and player.Character then
@@ -476,7 +487,7 @@ task.spawn(function()
 end)
 
 local UIUpdaters = {}
-local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI
+local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI, updateAntiAimUI
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
@@ -986,7 +997,6 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 	
 	pcall(function()
 		if FPSBoostEnabled then
-			-- تفعيل إعدادات مضاد اللاج
 			Lighting.GlobalShadows = false
 			Lighting.FogEnd = 999999
 			settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
@@ -1005,18 +1015,73 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 				end
 			end
 		else
-			-- إلغاء الإعدادات للافتراضي
+			-- إعادة إعدادات اللعبة طبيعية تماماً عند الإغلاق
 			Lighting.GlobalShadows = true
+			Lighting.FogEnd = 100000
 			settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+			if Terrain then
+				Terrain.WaterWaveSize = 1
+				Terrain.WaterWaveSpeed = 8
+				Terrain.WaterReflectance = 1
+				Terrain.WaterTransparency = 0
+			end
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+					obj.Enabled = true
+				end
+			end
 		end
 	end)
 end)
 updateFPSBoostUI()
 
--- 11. Hitbox Size Section (Y: 464)
+-- 11. Anti-Aim / Anti-Aimbot Shield Button (Y: 464)
+AntiAimBtnRef = Instance.new("TextButton")
+AntiAimBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
+AntiAimBtnRef.Position = UDim2.new(0.05, 0, 0, 464)
+AntiAimBtnRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+AntiAimBtnRef.BackgroundTransparency = 0.35
+AntiAimBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAimBtnRef.TextSize = 10
+AntiAimBtnRef.Font = Enum.Font.GothamSemibold
+AntiAimBtnRef.Parent = MainFrame
+
+local AntiAimCorner = Instance.new("UICorner")
+AntiAimCorner.CornerRadius = UDim.new(0, 6)
+AntiAimCorner.Parent = AntiAimBtnRef
+
+updateAntiAimUI = function()
+	local lang = Translations[CurrentLang]
+	local titleName = (CurrentLang == "AR") and "مضاد الإيم بوت (Anti-Aim)" or "Anti-Aimbot"
+	local status = AntiAimEnabled and lang.ON or lang.OFF
+	AntiAimBtnRef.Text = titleName .. ": " .. status
+	AntiAimBtnRef.BackgroundColor3 = AntiAimEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
+	AntiAimBtnRef.BackgroundTransparency = 0.35
+end
+table.insert(UIUpdaters, updateAntiAimUI)
+
+AntiAimBtnRef.MouseButton1Click:Connect(function()
+	AntiAimEnabled = not AntiAimEnabled
+	updateAntiAimUI()
+end)
+
+-- وظيفة Anti-Aim: تشتيت إيم بوت الخصوم عبر تغيير موضع الهيد أو الدوران السريع while standing still
+table.insert(Connections, RunService.RenderStepped:Connect(function()
+	if AntiAimEnabled then
+		local char = LocalPlayer.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local hrp = char.HumanoidRootPart
+			-- تدوير عشوائي سريع يربك أي إيم بوت موجه نحو الشخصية وأنت واقف في مكانك
+			hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(math.random(-180, 180)), 0)
+		end
+	end
+end))
+updateAntiAimUI()
+
+-- 12. Hitbox Size Section (Y: 504)
 HitboxLabelRef = Instance.new("TextLabel")
 HitboxLabelRef.Size = UDim2.new(0.35, 0, 0, 32)
-HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 464)
+HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 504)
 HitboxLabelRef.BackgroundTransparency = 1
 HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
 HitboxLabelRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1027,7 +1092,7 @@ HitboxLabelRef.Parent = MainFrame
 
 local HitboxMinusBtn = Instance.new("TextButton")
 HitboxMinusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 464)
+HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 504)
 HitboxMinusBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 HitboxMinusBtn.BackgroundTransparency = 0.3
 HitboxMinusBtn.Text = "-"
@@ -1042,7 +1107,7 @@ MinusCorner.Parent = HitboxMinusBtn
 
 local HitboxPlusBtn = Instance.new("TextButton")
 HitboxPlusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 464)
+HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 504)
 HitboxPlusBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 HitboxPlusBtn.BackgroundTransparency = 0.3
 HitboxPlusBtn.Text = "+"
@@ -1081,10 +1146,10 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
--- 12. Teleport to Player Section (Y: 504)
+-- 13. Teleport to Player Section (Y: 544)
 TeleportInputRef = Instance.new("TextBox")
 TeleportInputRef.Size = UDim2.new(0.58, 0, 0, 32)
-TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 504)
+TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 544)
 TeleportInputRef.BackgroundTransparency = 0.4
 TeleportInputRef.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 TeleportInputRef.Text = ""
@@ -1100,7 +1165,7 @@ TeleportInputCorner.Parent = TeleportInputRef
 
 TeleportBtnRef = Instance.new("TextButton")
 TeleportBtnRef.Size = UDim2.new(0.29, 0, 0, 32)
-TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 504)
+TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 544)
 TeleportBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 220)
 TeleportBtnRef.BackgroundTransparency = 0.3
 TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
@@ -1131,10 +1196,10 @@ TeleportBtnRef.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 13. Server Hop System Button (Y: 544)
+-- 14. Server Hop System Button (Y: 584)
 ServerHopPanelBtnRef = Instance.new("TextButton")
 ServerHopPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 544)
+ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 584)
 ServerHopPanelBtnRef.BackgroundColor3 = Color3.fromRGB(80, 50, 180)
 ServerHopPanelBtnRef.BackgroundTransparency = 0.35
 ServerHopPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1288,10 +1353,10 @@ AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
 end)
 
--- 14. Region / Country Label (Y: 624)
+-- 15. Region / Country Label (Y: 664)
 CountryLabelRef = Instance.new("TextLabel")
 CountryLabelRef.Size = UDim2.new(0.9, 0, 0, 28)
-CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 624)
+CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 664)
 CountryLabelRef.BackgroundTransparency = 1
 CountryLabelRef.Text = Translations[CurrentLang].CountryLoading
 CountryLabelRef.TextColor3 = Color3.fromRGB(0, 210, 255)
@@ -1316,10 +1381,10 @@ task.spawn(function()
 	end
 end)
 
--- 15. Footer Label (Y: 660)
+-- 16. Footer Label (Y: 700)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
-FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 660)
+FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 700)
 FooterLabelRef.BackgroundTransparency = 1
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
