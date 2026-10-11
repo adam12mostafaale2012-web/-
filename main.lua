@@ -1063,15 +1063,13 @@ AntiAimBtnRef.MouseButton1Click:Connect(function()
 	updateAntiAimUI()
 end)
 
--- الحل الآمن 100%: تشتيت إيم بوت الخصوم عن طريق إرسال إحداثيات وهمية سريعة لـ Camera Focus أو الاهتزاز الخفيف دون تدوير الجسم أو الموت
+-- الحل الآمن تماماً: تشتيت إيم بوت الخصوم عبر تغيير سرعة وزط الرأس طفيفاً دون تحريك الجسم أو الموت
 table.insert(Connections, RunService.RenderStepped:Connect(function()
 	if AntiAimEnabled then
 		local char = LocalPlayer.Character
 		if char and char:FindFirstChild("Head") then
 			local head = char.Head
-			-- تحريك الإحداثيات بمقدار جزء من المليون (Micro-Offset) لتضليل الإيم بوت تماماً وأنت واقف مكانك وبصحة كاملة
-			local originalPos = head.Position
-			head.AssemblyLinearVelocity = Vector3.new(math.random(-50, 50), math.random(10, 30), math.random(-50, 50))
+			head.AssemblyLinearVelocity = Vector3.new(math.random(-40, 40), math.random(5, 20), math.random(-40, 40))
 		end
 	end
 end))
@@ -1390,7 +1388,7 @@ FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
 FooterLabelRef.Font = Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
-FooterLabelRef.Parent = Main`Frame
+FooterLabelRef.Parent = MainFrame
 
 -- Keyboard Toggle (LeftControl for UI)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
