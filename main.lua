@@ -9,7 +9,7 @@ local StarterGui = game:GetService("StarterGui")
 -- ⚙️ لوحة التحكم في الصيانة (من هنا بتقفل وتفتح):
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = false  
+local ScriptEnabled = true  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة
