@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.1 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -18,9 +18,9 @@ local ScriptEnabled = true
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
-			Title = "تنبيه صيانة",
+			Title = "تنبيه صيانة ⚠️",
 			Text = "نعتذر يوجد صيانة من المطور آدم يمكن غلق اللعبة وفتحها اذا لم يفتح لي فترة كبيرة من الوقت",
-			Duration = 6
+			Duration = 8
 		})
 	end)
 end
@@ -102,7 +102,7 @@ local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, Hop
 local UpdatesFrame, UpdatesCloseBtn, UpdatesTitle, UpdatesTextLabel, UpdatesScroll
 local ThemeFrame, ThemeCloseBtn, ThemeTitleText, ThemeGreenBtn, ThemeRedBtn, ThemeBlueBtn, ThemePurpleBtn
 
--- Translations Setup
+-- Translations Setup (Comprehensive Translation)
 local Translations = {
 	EN = {
 		Title = "⚡ ADAM & YASEEN CONTROLLER ⚡",
@@ -124,6 +124,21 @@ local Translations = {
 		ThemeBtn = "Theme UI Color 🎨",
 		SavePosBtn = "Save Location 📍",
 		LoadPosBtn = "Teleport Saved 🚀",
+		
+		-- Server Hop Sub-panel
+		ServerHopInfo = "Server Hop & Region Switcher\nFind smaller or cleaner servers.",
+		HopThresholdPlaceholder = "Max Players Threshold...",
+		HopOnceText = "Hop Once",
+		AutoHopON = "Auto Hop: ON",
+		AutoHopOFF = "Auto Hop: OFF",
+		
+		-- Theme Sub-panel
+		ThemeTitle = "🎨 Choose Interface Color Theme",
+		ThemeGreen = "🟢 Neon Green",
+		ThemeRed = "🔴 Crimson Red",
+		ThemeBlue = "🔵 Cyber Blue",
+		ThemePurple = "🟣 Royal Purple",
+		
 		UpdatesTitleText = "📜 Complete Script Features & History",
 		UpdatesLogText = [[
 ⚡ ADAM & YASEEN VIP CONTROLLER FULL GUIDE ⚡
@@ -175,6 +190,21 @@ local Translations = {
 		ThemeBtn = "تغيير لون الواجهة 🎨",
 		SavePosBtn = "حفظ المكان الحالي 📍",
 		LoadPosBtn = "الانتقال للمحفوظ 🚀",
+		
+		-- Server Hop Sub-panel
+		ServerHopInfo = "نظام التبديل والانتقال الذكي للسيرفرات\nللبحث عن سيرفرات هادئة وبدون لاج.",
+		HopThresholdPlaceholder = "الحد الأقصى للاعبين بالسيرفر...",
+		HopOnceText = "تبديل الآن",
+		AutoHopON = "تبديل تلقائي: شغال",
+		AutoHopOFF = "تبديل تلقائي: مقفول",
+		
+		-- Theme Sub-panel
+		ThemeTitle = "🎨 اختر لون الواجهة المفضل",
+		ThemeGreen = "🟢 أخضر نيون",
+		ThemeRed = "🔴 أحمر ناري",
+		ThemeBlue = "🔵 أزرق سايبر",
+		ThemePurple = "🟣 بنفسجي ملكي",
+		
 		UpdatesTitleText = "📜 دليل ومميزات السكربت الشاملة",
 		UpdatesLogText = [[
 ⚡ دليل ومميزات سكربت ادم وياسين VIP الشامل ⚡
@@ -545,18 +575,32 @@ local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
-	LangBtnRef.Text = Translations[CurrentLang].LangBtn
-	TitleLabel.Text = Translations[CurrentLang].Title
-	TeleportInputRef.PlaceholderText = Translations[CurrentLang].TeleportPlaceholder
-	TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
-	ServerHopPanelBtnRef.Text = Translations[CurrentLang].ServerHopBtn
-	UpdatesPanelBtnRef.Text = Translations[CurrentLang].UpdatesBtn
-	ThemePanelBtnRef.Text = Translations[CurrentLang].ThemeBtn
-	SavePosBtnRef.Text = Translations[CurrentLang].SavePosBtn
-	LoadPosBtnRef.Text = Translations[CurrentLang].LoadPosBtn
-	UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
-	UpdatesTextLabel.Text = Translations[CurrentLang].UpdatesLogText
-	FooterLabelRef.Text = Translations[CurrentLang].Footer
+	local L = Translations[CurrentLang]
+	
+	LangBtnRef.Text = L.LangBtn
+	TitleLabel.Text = L.Title
+	TeleportInputRef.PlaceholderText = L.TeleportPlaceholder
+	TeleportBtnRef.Text = L.TeleportBtn
+	ServerHopPanelBtnRef.Text = L.ServerHopBtn
+	UpdatesPanelBtnRef.Text = L.UpdatesBtn
+	ThemePanelBtnRef.Text = L.ThemeBtn
+	SavePosBtnRef.Text = L.SavePosBtn
+	LoadPosBtnRef.Text = L.LoadPosBtn
+	
+	ServerHopInfoLabel.Text = L.ServerHopInfo
+	ServerHopInput.PlaceholderText = L.HopThresholdPlaceholder
+	HopOnceBtn.Text = L.HopOnceText
+	AutoHopBtn.Text = AutoHopEnabled and L.AutoHopON or L.AutoHopOFF
+	
+	ThemeTitleText.Text = L.ThemeTitle
+	ThemeGreenBtn.Text = L.ThemeGreen
+	ThemeRedBtn.Text = L.ThemeRed
+	ThemeBlueBtn.Text = L.ThemeBlue
+	ThemePurpleBtn.Text = L.ThemePurple
+	
+	UpdatesTitle.Text = L.UpdatesTitleText
+	UpdatesTextLabel.Text = L.UpdatesLogText
+	FooterLabelRef.Text = L.Footer
 	
 	for _, updater in ipairs(UIUpdaters) do
 		pcall(updater)
@@ -1043,7 +1087,7 @@ FPSCorner.Parent = FPSBoostBtnRef
 
 updateFPSBoostUI = function()
 	local lang = Translations[CurrentLang]
-	local titleName = (CurrentLang == "AR") and "مضاد اللاج وسلاسة اللعبة" or "FPS Boost"
+	local titleName = (CurrentLang == "AR") and Translations.AR.FPSBoostText or Translations.EN.FPSBoostText
 	local status = FPSBoostEnabled and lang.ON or lang.OFF
 	FPSBoostBtnRef.Text = titleName .. ": " .. status
 	FPSBoostBtnRef.BackgroundColor3 = FPSBoostEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
@@ -1172,8 +1216,8 @@ local function TeleportToSavedWaypoint()
 	else
 		pcall(function()
 			StarterGui:SetCore("SendNotification", {
-				Title = "تنبيه ⚠️",
-				Text = "لم تقم بحفظ أي مكان بعد!",
+				Title = (CurrentLang == "AR") and "تنبيه ⚠️" or "Warning ⚠️",
+				Text = (CurrentLang == "AR") and "لم تقم بحفظ أي مكان بعد!" or "No saved position found!",
 				Duration = 3
 			})
 		end)
@@ -1217,8 +1261,8 @@ SavePosBtnRef.MouseButton1Click:Connect(function()
 		SavedPosition = char.HumanoidRootPart.CFrame
 		pcall(function()
 			StarterGui:SetCore("SendNotification", {
-				Title = "تم الحفظ 📍",
-				Text = "تم حفظ المكان! اضغط على زر الانتقال للمحفوظ للرجوع إليه",
+				Title = (CurrentLang == "AR") and "تم الحفظ 📍" or "Saved 📍",
+				Text = (CurrentLang == "AR") and "تم حفظ المكان! اضغط على زر الانتقال للمحفوظ للرجوع إليه" or "Position saved! Click Teleport Saved to return.",
 				Duration = 3
 			})
 		end)
@@ -1331,7 +1375,7 @@ ServerHopInfoLabel = Instance.new("TextLabel")
 ServerHopInfoLabel.Size = UDim2.new(0.9, 0, 0, 50)
 ServerHopInfoLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
 ServerHopInfoLabel.BackgroundTransparency = 1
-ServerHopInfoLabel.Text = "Server Hop & Region Switcher\nFind smaller or cleaner servers."
+ServerHopInfoLabel.Text = Translations[CurrentLang].ServerHopInfo
 ServerHopInfoLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
 ServerHopInfoLabel.TextSize = 10
 ServerHopInfoLabel.Font = Enum.Font.Gotham
@@ -1344,7 +1388,7 @@ ServerHopInput.Position = UDim2.new(0.05, 0, 0.42, 0)
 ServerHopInput.BackgroundColor3 = Color3.fromRGB(22, 28, 42)
 ServerHopInput.BackgroundTransparency = 0.3
 ServerHopInput.Text = "1"
-ServerHopInput.PlaceholderText = "Max Players Threshold..."
+ServerHopInput.PlaceholderText = Translations[CurrentLang].HopThresholdPlaceholder
 ServerHopInput.TextColor3 = Color3.fromRGB(255, 255, 255)
 ServerHopInput.TextSize = 11
 ServerHopInput.Font = Enum.Font.GothamBold
@@ -1359,7 +1403,7 @@ HopOnceBtn.Size = UDim2.new(0.42, 0, 0, 35)
 HopOnceBtn.Position = UDim2.new(0.05, 0, 0.62, 0)
 HopOnceBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
 HopOnceBtn.BackgroundTransparency = 0.3
-HopOnceBtn.Text = "Hop Once"
+HopOnceBtn.Text = Translations[CurrentLang].HopOnceText
 HopOnceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 HopOnceBtn.TextSize = 11
 HopOnceBtn.Font = Enum.Font.GothamBold
@@ -1374,7 +1418,7 @@ AutoHopBtn.Size = UDim2.new(0.42, 0, 0, 35)
 AutoHopBtn.Position = UDim2.new(0.53, 0, 0.62, 0)
 AutoHopBtn.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
 AutoHopBtn.BackgroundTransparency = 0.3
-AutoHopBtn.Text = "Auto Hop: OFF"
+AutoHopBtn.Text = Translations[CurrentLang].AutoHopOFF
 AutoHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AutoHopBtn.TextSize = 10
 AutoHopBtn.Font = Enum.Font.GothamBold
@@ -1432,7 +1476,7 @@ end)
 
 AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopEnabled = not AutoHopEnabled
-	AutoHopBtn.Text = AutoHopEnabled and "Auto Hop: ON" or "Auto Hop: OFF"
+	AutoHopBtn.Text = AutoHopEnabled and Translations[CurrentLang].AutoHopON or Translations[CurrentLang].AutoHopOFF
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
 end)
 
@@ -1490,7 +1534,7 @@ ThemeTitleText = Instance.new("TextLabel")
 ThemeTitleText.Size = UDim2.new(0.8, 0, 0, 30)
 ThemeTitleText.Position = UDim2.new(0.05, 0, 0.04, 0)
 ThemeTitleText.BackgroundTransparency = 1
-ThemeTitleText.Text = "🎨 اختر لون الواجهة المفضل"
+ThemeTitleText.Text = Translations[CurrentLang].ThemeTitle
 ThemeTitleText.TextColor3 = CurrentThemeColor
 ThemeTitleText.TextSize = 12
 ThemeTitleText.Font = Enum.Font.GothamBold
@@ -1502,7 +1546,7 @@ ThemeGreenBtn = Instance.new("TextButton")
 ThemeGreenBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeGreenBtn.Position = UDim2.new(0.05, 0, 0.28, 0)
 ThemeGreenBtn.BackgroundColor3 = Color3.fromRGB(0, 220, 140)
-ThemeGreenBtn.Text = "🟢 أخضر نيون"
+ThemeGreenBtn.Text = Translations[CurrentLang].ThemeGreen
 ThemeGreenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ThemeGreenBtn.TextSize = 11
 ThemeGreenBtn.Font = Enum.Font.GothamBold
@@ -1517,7 +1561,7 @@ ThemeRedBtn = Instance.new("TextButton")
 ThemeRedBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeRedBtn.Position = UDim2.new(0.53, 0, 0.28, 0)
 ThemeRedBtn.BackgroundColor3 = Color3.fromRGB(230, 40, 60)
-ThemeRedBtn.Text = "🔴 أحمر ناري"
+ThemeRedBtn.Text = Translations[CurrentLang].ThemeRed
 ThemeRedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ThemeRedBtn.TextSize = 11
 ThemeRedBtn.Font = Enum.Font.GothamBold
@@ -1532,7 +1576,7 @@ ThemeBlueBtn = Instance.new("TextButton")
 ThemeBlueBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeBlueBtn.Position = UDim2.new(0.05, 0, 0.58, 0)
 ThemeBlueBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 255)
-ThemeBlueBtn.Text = "🔵 أزرق سايبر"
+ThemeBlueBtn.Text = Translations[CurrentLang].ThemeBlue
 ThemeBlueBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ThemeBlueBtn.TextSize = 11
 ThemeBlueBtn.Font = Enum.Font.GothamBold
@@ -1547,7 +1591,7 @@ ThemePurpleBtn = Instance.new("TextButton")
 ThemePurpleBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemePurpleBtn.Position = UDim2.new(0.53, 0, 0.58, 0)
 ThemePurpleBtn.BackgroundColor3 = Color3.fromRGB(160, 60, 240)
-ThemePurpleBtn.Text = "🟣 بنفسجي ملكي"
+ThemePurpleBtn.Text = Translations[CurrentLang].ThemePurple
 ThemePurpleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ThemePurpleBtn.TextSize = 11
 ThemePurpleBtn.Font = Enum.Font.GothamBold
