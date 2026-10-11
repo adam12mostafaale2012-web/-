@@ -19,7 +19,7 @@ local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
 			Title = "تنبيه صيانة",
-			Text = "نعتذر يوجد صيانة من المطور آدم",
+			Text = "نعتذر يوجد صيانة من المطور آدم يمكن غلق اللعبة وفتحها اذا لم يفتح لي فترة كبيرة من الوقت",
 			Duration = 6
 		})
 	end)
