@@ -1,22 +1,34 @@
-local Http = game:GetService("HttpService")
+local Http = Service or game:GetService("HttpService")
 
--- رابط ملف التحكم مع منع الـ Cache
-local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
-local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
+-- إضافة وقت دقيق لمنع الـ Cache نهائياً
+local timeStamp = tostring(os.time())
+local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?time=" .. timeStamp
+local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?time=" .. timeStamp
 
-local success, statusData = pcall(function()
-    return Http:JSONDecode(game:HttpGet(statusURL))
+local success, response = pcall(function()
+    return game:HttpGet(statusURL)
 end)
 
--- الفحص المباشر: يشتغل فقط إذا كانت الحالة تساوي بالظبط "تشغيل"
-if success and statusData and statusData.status == "تشغيل" then
-    local scriptCode = game:HttpGet(mainURL)
-    local loadedFunc, err = loadstring(scriptCode)
+if not success then
+    warn("فشل الاتصال بملف الحالة")
+    return
+end
+
+-- تنظيف النص من أي مسافات مخفية
+local statusText = response:match('"status"%s*:%s*"([^"]+)"')
+
+if statusText == "تشغيل" then
+    local scriptSuccess, scriptCode = pcall(function()
+        return game:HttpGet(mainURL)
+    end)
     
-    if loadedFunc then
-        loadedFunc()
-    else
-        warn("خطأ في تشغيل السكريبت الرئيسي:", err)
+    if scriptSuccess and scriptCode then
+        local runFunc, err = loadstring(scriptCode)
+        if runFunc then
+            runFunc()
+        else
+            warn("خطأ في تشغيل السكريبت:", err)
+        end
     end
 else
     game:GetService("StarterGui"):SetCore("SendNotification", {
