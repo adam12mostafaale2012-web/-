@@ -2,6 +2,39 @@
 -- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE ⚡
 -- ========================================================
 
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+
+---------------------------------------------------------
+-- ⚙️ لوحة التحكم في الصيانة (من هنا بتقفل وتفتح):
+-- true  = السكريبت شغال وطبيعي عند الكل
+-- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
+local ScriptEnabled = true  
+---------------------------------------------------------
+
+-- دالة إشعار الصيانة
+local function showMaintenanceNotice()
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = "تنبيه صيانة",
+			Text = "نعتذر يوجد صيانة من المطور آدم",
+			Duration = 6
+		})
+	end)
+end
+
+-- فحص الحالة فوراً قبل تحميل أي حاجة
+if ScriptEnabled == false then
+	showMaintenanceNotice()
+	-- حذف أي واجهات قديمة لو كانت موجودة
+	for _, gui in pairs(CoreGui:GetChildren()) do
+		if gui:IsA("ScreenGui") and not gui.Name:find("Roblox") then
+			gui:Destroy()
+		end
+	end
+	return -- إيقاف نهائي للتشغيل
+end
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
@@ -152,7 +185,7 @@ ScreenGui.Name = "Legendary_Core_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
--- Main Frame Setup (المقاسات الأصلية 310x830)
+-- Main Frame Setup
 local BaseWidth, BaseHeight = 310, 830
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
@@ -277,7 +310,7 @@ local LangCorner = Instance.new("UICorner")
 LangCorner.CornerRadius = UDim.new(0, 6)
 LangCorner.Parent = LangBtnRef
 
--- Close Button (UI Only)
+-- Close Button
 local CloseUIBtn = Instance.new("TextButton")
 CloseUIBtn.Size = UDim2.new(0, 28, 0, 28)
 CloseUIBtn.Position = UDim2.new(0.83, 0, 0.24, 0)
@@ -342,14 +375,25 @@ local function CleanScript()
 
 	for _, conn in pairs(Connections) do if conn then conn:Disconnect() end end
 	ScreenGui:Destroy()
+	if ToggleBtn and ToggleBtn.Parent then ToggleBtn:Destroy() end
 end
 
 CloseUIBtn.MouseButton1Click:Connect(CleanScript)
 
+-- حلقة مراقبة داخلية للتحكم الفوري لو غيرتها لـ false أثناء اللعب
+task.spawn(function()
+	while task.wait(3) do
+		if ScriptEnabled == false then
+			showMaintenanceNotice()
+			CleanScript()
+			break
+		end
+	end
+end)
+
 local UIUpdaters = {}
 local updateSpeedUI, updateFlyUI, updateArhangelsUI
 
--- Language Switch Logic
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
 	LangBtnRef.Text = Translations[CurrentLang].LangBtn
@@ -365,7 +409,7 @@ LangBtnRef.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- UI CONTROLS
+-- UI CONTROLS (أزرار السكريبت كاملة كما هي)
 ---------------------------------------------------------
 
 local function createSimpleToggle(posY, textKeyAR, textKeyEN, onClick)
@@ -766,7 +810,7 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
--- 8. Multi-Jump Button (Y: 344) - (مفعل ويعمل بكفاءة عالية في القفز المتكرر)
+-- 8. Multi-Jump Button (Y: 344)
 createSimpleToggle(344, Translations.AR.MultiJumpText, Translations.EN.MultiJumpText, function(enabled)
 	MultiJumpEnabled = enabled
 end)
