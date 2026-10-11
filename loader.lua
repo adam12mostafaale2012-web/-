@@ -1,6 +1,6 @@
 local Http = game:GetService("HttpService")
 
--- رابط ملف التحكم لمنع الـ Cache
+-- رابط ملف التحكم مع منع الـ Cache
 local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
 local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
 
@@ -8,15 +8,8 @@ local success, statusData = pcall(function()
     return Http:JSONDecode(game:HttpGet(statusURL))
 end)
 
--- يفحص كلمة "تشغيل" أو قيمة true
-local isOnline = false
-if success and statusData then
-    if statusData.status == "تشغيل" or statusData.enabled == true then
-        isOnline = true
-    end
-end
-
-if isOnline then
+-- الفحص المباشر: يشتغل فقط إذا كانت الحالة تساوي بالظبط "تشغيل"
+if success and statusData and statusData.status == "تشغيل" then
     local scriptCode = game:HttpGet(mainURL)
     local loadedFunc, err = loadstring(scriptCode)
     
