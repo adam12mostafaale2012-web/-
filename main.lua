@@ -6,13 +6,13 @@ local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
 ---------------------------------------------------------
--- ⚙️ لوحة التحكم الرئيسية للصيانة (من هنا بتقفل وتفتح):
+-- ⚙️ لوحة التحكم في الصيانة (من هنا بتقفل وتفتح):
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
 local ScriptEnabled = true  
 ---------------------------------------------------------
 
--- دالة إشعار الصيانة الفورية
+-- دالة إشعار الصيانة
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
@@ -23,7 +23,7 @@ local function showMaintenanceNotice()
 	end)
 end
 
--- فحص حالة الصيانة فوراً قبل تحميل أي حاجة
+-- فحص الحالة فوراً قبل تحميل أي حاجة
 if ScriptEnabled == false then
 	showMaintenanceNotice()
 	for _, gui in pairs(CoreGui:GetChildren()) do
@@ -289,7 +289,7 @@ ToggleBtn.BackgroundTransparency = 0.15
 ToggleBtn.Text = ""
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
-ToggleBtn.Visible = false
+ToggleBtn.Visible = false -- مخفي في البداية
 ToggleBtn.Parent = ScreenGui
 
 local ToggleCorner = Instance.new("UICorner")
@@ -337,20 +337,22 @@ end)
 ---------------------------------------------------------
 -- تفعيل الأحداث بعد اختيار نوع الجهاز
 ---------------------------------------------------------
+-- عند اختيار الكمبيوتر
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 310, 830
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true
+	ToggleBtn.Visible = true -- إظهار زر آدم العائم
 end)
 
+-- عند اختيار الهاتف (تصغير مقاس اللوحة لتناسب الشاشة الصغيرة)
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 265, 740
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true
+	ToggleBtn.Visible = true -- إظهار زر آدم العائم
 end)
 ---------------------------------------------------------
 
@@ -462,7 +464,7 @@ end
 
 CloseUIBtn.MouseButton1Click:Connect(CleanScript)
 
--- حلقة مراقبة صيانة داخلية تعمل أوتوماتيك لو غيرت ScriptEnabled لـ false أثناء اللعب
+-- حلقة مراقبة صيانة داخلية
 task.spawn(function()
 	while task.wait(3) do
 		if ScriptEnabled == false then
@@ -1261,7 +1263,7 @@ end)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
 FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 620)
-FooterLabelRef.BackgroundTransparency = 1
+FooterLabelRef.BackgroundTransparency = 0.5
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
