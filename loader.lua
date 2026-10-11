@@ -5,7 +5,7 @@ local StarterGui = game:GetService("StarterGui")
 -- ⚙️ لوحة التحكم في السكريبت المباشرة:
 -- true  = السكريبت شغال تمام
 -- false = السكريبت متوقف للصيانة
-local ScriptEnabled = true  
+local ScriptEnabled = false  
 ---------------------------------------------------------
 
 -- 1️⃣ الفحص أول ما اللاعب يشغل السكريبت
