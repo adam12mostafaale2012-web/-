@@ -4,15 +4,17 @@
 
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 
 ---------------------------------------------------------
--- ⚙️ لوحة التحكم في الصيانة (من هنا بتقفل وتفتح):
+-- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
 local ScriptEnabled = true  
 ---------------------------------------------------------
 
--- دالة إشعار الصيانة
+-- دالة إشعار الصيانة الفورية
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
@@ -23,7 +25,7 @@ local function showMaintenanceNotice()
 	end)
 end
 
--- فحص الحالة فوراً قبل تحميل أي حاجة
+-- فحص حالة الصيانة فوراً قبل تحميل أي حاجة
 if ScriptEnabled == false then
 	showMaintenanceNotice()
 	for _, gui in pairs(CoreGui:GetChildren()) do
@@ -57,6 +59,7 @@ local ESPEnabled = false
 local MM2ESPEnabled = false
 local MultiJumpEnabled = false
 local ArhangelsTeamEnabled = false
+local FPSBoostEnabled = false
 local HitboxSizeVal = 4
 
 local WalkSpeedVal = 50
@@ -103,7 +106,7 @@ local CountryNamesAR = {
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
 local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef
 local CountryLabelRef, FooterLabelRef
-local ArhangelsBtnRef, HitboxLabelRef
+local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
 
 -- Translations Setup
@@ -119,6 +122,7 @@ local Translations = {
 		MM2ESPText = "MM2 Role Reveal",
 		MultiJumpText = "Multi-Jump",
 		ArhangelsText = "ARHANGELS TEAM",
+		FPSBoostText = "FPS Boost (Anti-Lag)",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "Teleport",
 		TeleportPlaceholder = "Player Name...",
@@ -142,6 +146,7 @@ local Translations = {
 		MM2ESPText = "كشف أدوار MM2 🔪",
 		MultiJumpText = "القفز المتعدد",
 		ArhangelsText = "ARHANGELS TEAM",
+		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
 		HitboxText = "Hitbox Size",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
@@ -185,7 +190,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 ---------------------------------------------------------
--- 📱💻 نافذة اختيار الجهاز أولاً (ولا يظهر زر ADAM أبداً قبلها)
+-- 📱💻 نافذة اختيار الجهاز أولاً
 ---------------------------------------------------------
 local SelectorGui = Instance.new("Frame")
 SelectorGui.Size = UDim2.new(0, 320, 0, 190)
@@ -214,7 +219,6 @@ SelectorTitle.TextSize = 15
 SelectorTitle.Font = Enum.Font.GothamBold
 SelectorTitle.Parent = SelectorGui
 
--- زر الكمبيوتر في القائمة الأولى
 local PCBtn = Instance.new("TextButton")
 PCBtn.Size = UDim2.new(0.85, 0, 0, 45)
 PCBtn.Position = UDim2.new(0.075, 0, 0.35, 0)
@@ -229,7 +233,6 @@ local PCCorner = Instance.new("UICorner")
 PCCorner.CornerRadius = UDim.new(0, 8)
 PCCorner.Parent = PCBtn
 
--- زر الهاتف في القائمة الأولى
 local MobileBtn = Instance.new("TextButton")
 MobileBtn.Size = UDim2.new(0.85, 0, 0, 45)
 MobileBtn.Position = UDim2.new(0.075, 0, 0.65, 0)
@@ -245,7 +248,7 @@ MobileCorner.CornerRadius = UDim.new(0, 8)
 MobileCorner.Parent = MobileBtn
 
 ---------------------------------------------------------
--- إعداد اللوحة الرئيسية (مخفية تماماً في البداية)
+-- إعداد اللوحة الرئيسية
 ---------------------------------------------------------
 local BaseWidth, BaseHeight = 310, 830
 
@@ -278,7 +281,7 @@ GradientStroke.Color = ColorSequence.new({
 GradientStroke.Parent = MainStroke
 
 ---------------------------------------------------------
--- زر ADAM العائم (يبدأ مخفي تماماً ولن يظهر إلا بعد اختيار الجهاز)
+-- زر ADAM العائم
 ---------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "Legendary_ToggleBtn"
@@ -289,7 +292,7 @@ ToggleBtn.BackgroundTransparency = 0.15
 ToggleBtn.Text = ""
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
-ToggleBtn.Visible = false -- مخفي في البداية
+ToggleBtn.Visible = false
 ToggleBtn.Parent = ScreenGui
 
 local ToggleCorner = Instance.new("UICorner")
@@ -335,24 +338,22 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- تفعيل الأحداث بعد اختيار نوع الجهاز
+-- الأحداث بعد اختيار نوع الجهاز
 ---------------------------------------------------------
--- عند اختيار الكمبيوتر
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 310, 830
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true -- إظهار زر آدم العائم
+	ToggleBtn.Visible = true
 end)
 
--- عند اختيار الهاتف (تصغير مقاس اللوحة لتناسب الشاشة الصغيرة)
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 265, 740
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true -- إظهار زر آدم العائم
+	ToggleBtn.Visible = true
 end)
 ---------------------------------------------------------
 
@@ -411,7 +412,6 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseUIBtn
 
--- Safe Cleanup / Reset Function
 local function CleanScript()
 	SpeedEnabled = false
 	NoclipEnabled = false
@@ -476,7 +476,7 @@ task.spawn(function()
 end)
 
 local UIUpdaters = {}
-local updateSpeedUI, updateFlyUI, updateArhangelsUI
+local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
@@ -493,9 +493,8 @@ LangBtnRef.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- UI CONTROLS (الأزرار والوظائف الأساسية)
+-- UI CONTROLS
 ---------------------------------------------------------
-
 local function createSimpleToggle(posY, textKeyAR, textKeyEN, onClick)
 	local button = Instance.new("TextButton")
 	button.Size = UDim2.new(0.9, 0, 0, 32)
@@ -956,10 +955,68 @@ ArhangelsBtnRef.MouseButton1Click:Connect(function()
 end)
 updateArhangelsUI()
 
--- 10. Hitbox Size Section (Y: 424)
+-- 10. FPS Boost / Anti-Lag Button (Y: 424)
+FPSBoostBtnRef = Instance.new("TextButton")
+FPSBoostBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
+FPSBoostBtnRef.Position = UDim2.new(0.05, 0, 0, 424)
+FPSBoostBtnRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+FPSBoostBtnRef.BackgroundTransparency = 0.35
+FPSBoostBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+FPSBoostBtnRef.TextSize = 10
+FPSBoostBtnRef.Font = Enum.Font.GothamSemibold
+FPSBoostBtnRef.Parent = MainFrame
+
+local FPSCorner = Instance.new("UICorner")
+FPSCorner.CornerRadius = UDim.new(0, 6)
+FPSCorner.Parent = FPSBoostBtnRef
+
+updateFPSBoostUI = function()
+	local lang = Translations[CurrentLang]
+	local titleName = (CurrentLang == "AR") and "مضاد اللاج وسلاسة اللعبة" or "FPS Boost"
+	local status = FPSBoostEnabled and lang.ON or lang.OFF
+	FPSBoostBtnRef.Text = titleName .. ": " .. status
+	FPSBoostBtnRef.BackgroundColor3 = FPSBoostEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
+	FPSBoostBtnRef.BackgroundTransparency = 0.35
+end
+table.insert(UIUpdaters, updateFPSBoostUI)
+
+FPSBoostBtnRef.MouseButton1Click:Connect(function()
+	FPSBoostEnabled = not FPSBoostEnabled
+	updateFPSBoostUI()
+	
+	pcall(function()
+		if FPSBoostEnabled then
+			-- تفعيل إعدادات مضاد اللاج
+			Lighting.GlobalShadows = false
+			Lighting.FogEnd = 999999
+			settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+			if Terrain then
+				Terrain.WaterWaveSize = 0
+				Terrain.WaterWaveSpeed = 0
+				Terrain.WaterReflectance = 0
+				Terrain.WaterTransparency = 0
+			end
+			for _, obj in ipairs(Workspace:GetDescendants()) do
+				if obj:IsA("BasePart") then
+					obj.Material = Enum.Material.SmoothPlastic
+					obj.Reflectance = 0
+				elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+					obj.Enabled = false
+				end
+			end
+		else
+			-- إلغاء الإعدادات للافتراضي
+			Lighting.GlobalShadows = true
+			settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+		end
+	end)
+end)
+updateFPSBoostUI()
+
+-- 11. Hitbox Size Section (Y: 464)
 HitboxLabelRef = Instance.new("TextLabel")
 HitboxLabelRef.Size = UDim2.new(0.35, 0, 0, 32)
-HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 424)
+HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 464)
 HitboxLabelRef.BackgroundTransparency = 1
 HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
 HitboxLabelRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -970,7 +1027,7 @@ HitboxLabelRef.Parent = MainFrame
 
 local HitboxMinusBtn = Instance.new("TextButton")
 HitboxMinusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 424)
+HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 464)
 HitboxMinusBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 HitboxMinusBtn.BackgroundTransparency = 0.3
 HitboxMinusBtn.Text = "-"
@@ -985,7 +1042,7 @@ MinusCorner.Parent = HitboxMinusBtn
 
 local HitboxPlusBtn = Instance.new("TextButton")
 HitboxPlusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 424)
+HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 464)
 HitboxPlusBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 HitboxPlusBtn.BackgroundTransparency = 0.3
 HitboxPlusBtn.Text = "+"
@@ -1024,10 +1081,10 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
--- 11. Teleport to Player Section (Y: 464)
+-- 12. Teleport to Player Section (Y: 504)
 TeleportInputRef = Instance.new("TextBox")
 TeleportInputRef.Size = UDim2.new(0.58, 0, 0, 32)
-TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 464)
+TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 504)
 TeleportInputRef.BackgroundTransparency = 0.4
 TeleportInputRef.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 TeleportInputRef.Text = ""
@@ -1043,7 +1100,7 @@ TeleportInputCorner.Parent = TeleportInputRef
 
 TeleportBtnRef = Instance.new("TextButton")
 TeleportBtnRef.Size = UDim2.new(0.29, 0, 0, 32)
-TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 464)
+TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 504)
 TeleportBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 220)
 TeleportBtnRef.BackgroundTransparency = 0.3
 TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
@@ -1074,10 +1131,10 @@ TeleportBtnRef.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 12. Server Hop System Button (Y: 504)
+-- 13. Server Hop System Button (Y: 544)
 ServerHopPanelBtnRef = Instance.new("TextButton")
 ServerHopPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 504)
+ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 544)
 ServerHopPanelBtnRef.BackgroundColor3 = Color3.fromRGB(80, 50, 180)
 ServerHopPanelBtnRef.BackgroundTransparency = 0.35
 ServerHopPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1231,10 +1288,10 @@ AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
 end)
 
--- 13. Region / Country Label (Y: 584)
+-- 14. Region / Country Label (Y: 624)
 CountryLabelRef = Instance.new("TextLabel")
 CountryLabelRef.Size = UDim2.new(0.9, 0, 0, 28)
-CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 584)
+CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 624)
 CountryLabelRef.BackgroundTransparency = 1
 CountryLabelRef.Text = Translations[CurrentLang].CountryLoading
 CountryLabelRef.TextColor3 = Color3.fromRGB(0, 210, 255)
@@ -1259,11 +1316,11 @@ task.spawn(function()
 	end
 end)
 
--- 14. Footer Label (Y: 620)
+-- 15. Footer Label (Y: 660)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
-FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 620)
-FooterLabelRef.BackgroundTransparency = 0.5
+FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 660)
+FooterLabelRef.BackgroundTransparency = 1
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
