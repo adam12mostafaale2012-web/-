@@ -12,7 +12,7 @@ local StarterGui = game:GetService("StarterGui")
 local ScriptEnabled = true  
 ---------------------------------------------------------
 
--- دالة إشعار الصيانة
+-- دالة إشعار الصيانة الفورية
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
@@ -23,7 +23,7 @@ local function showMaintenanceNotice()
 	end)
 end
 
--- فحص الحالة فوراً قبل تحميل أي حاجة
+-- فحص حالة الصيانة فوراً قبل تحميل أي حاجة
 if ScriptEnabled == false then
 	showMaintenanceNotice()
 	for _, gui in pairs(CoreGui:GetChildren()) do
@@ -185,7 +185,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 ---------------------------------------------------------
--- 📱💻 نافذة اختيار الجهاز أولاً (ولا يظهر زر ADAM أبداً قبلها)
+-- 📱💻 نافذة اختيار الجهاز أولاً (زر ADAM مخفي قبل الاختيار)
 ---------------------------------------------------------
 local SelectorGui = Instance.new("Frame")
 SelectorGui.Size = UDim2.new(0, 320, 0, 190)
@@ -214,7 +214,6 @@ SelectorTitle.TextSize = 15
 SelectorTitle.Font = Enum.Font.GothamBold
 SelectorTitle.Parent = SelectorGui
 
--- زر الكمبيوتر في القائمة الأولى
 local PCBtn = Instance.new("TextButton")
 PCBtn.Size = UDim2.new(0.85, 0, 0, 45)
 PCBtn.Position = UDim2.new(0.075, 0, 0.35, 0)
@@ -229,7 +228,6 @@ local PCCorner = Instance.new("UICorner")
 PCCorner.CornerRadius = UDim.new(0, 8)
 PCCorner.Parent = PCBtn
 
--- زر الهاتف في القائمة الأولى
 local MobileBtn = Instance.new("TextButton")
 MobileBtn.Size = UDim2.new(0.85, 0, 0, 45)
 MobileBtn.Position = UDim2.new(0.075, 0, 0.65, 0)
@@ -278,7 +276,7 @@ GradientStroke.Color = ColorSequence.new({
 GradientStroke.Parent = MainStroke
 
 ---------------------------------------------------------
--- زر ADAM العائم (يبدأ مخفي تماماً ولن يظهر إلا بعد اختيار الجهاز)
+-- زر ADAM العائم (يبدأ مخفي ولا يظهر إلا بعد اختيار الجهاز)
 ---------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "Legendary_ToggleBtn"
@@ -289,7 +287,7 @@ ToggleBtn.BackgroundTransparency = 0.15
 ToggleBtn.Text = ""
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
-ToggleBtn.Visible = false -- مخفي في البداية
+ToggleBtn.Visible = false
 ToggleBtn.Parent = ScreenGui
 
 local ToggleCorner = Instance.new("UICorner")
@@ -335,24 +333,22 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- تفعيل الأحداث بعد اختيار نوع الجهاز
+-- الأحداث بعد اختيار نوع الجهاز
 ---------------------------------------------------------
--- عند اختيار الكمبيوتر
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 310, 830
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true -- إظهار زر آدم العائم
+	ToggleBtn.Visible = true
 end)
 
--- عند اختيار الهاتف (تصغير مقاس اللوحة لتناسب الشاشة الصغيرة)
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 265, 740
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
-	ToggleBtn.Visible = true -- إظهار زر آدم العائم
+	ToggleBtn.Visible = true
 end)
 ---------------------------------------------------------
 
@@ -411,7 +407,6 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseUIBtn
 
--- Safe Cleanup / Reset Function
 local function CleanScript()
 	SpeedEnabled = false
 	NoclipEnabled = false
@@ -493,9 +488,8 @@ LangBtnRef.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- UI CONTROLS (الأزرار والوظائف الأساسية)
+-- UI CONTROLS
 ---------------------------------------------------------
-
 local function createSimpleToggle(posY, textKeyAR, textKeyEN, onClick)
 	local button = Instance.new("TextButton")
 	button.Size = UDim2.new(0.9, 0, 0, 32)
@@ -1263,7 +1257,7 @@ end)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
 FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 620)
-FooterLabelRef.BackgroundTransparency = 0.5
+FooterLabelRef.BackgroundTransparency = 1
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
