@@ -6,13 +6,13 @@ local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
 ---------------------------------------------------------
--- ⚙️ لوحة التحكم في الصيانة (من هنا بتقفل وتفتح):
+-- ⚙️ لوحة التحكم الرئيسية للصيانة (من هنا بتقفل وتفتح):
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
 local ScriptEnabled = true  
 ---------------------------------------------------------
 
--- دالة إشعار الصيانة
+-- دالة إشعار الصيانة الفورية
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
@@ -23,16 +23,15 @@ local function showMaintenanceNotice()
 	end)
 end
 
--- فحص الحالة فوراً قبل تحميل أي حاجة
+-- فحص حالة الصيانة فوراً قبل تحميل أي حاجة
 if ScriptEnabled == false then
 	showMaintenanceNotice()
-	-- حذف أي واجهات قديمة لو كانت موجودة
 	for _, gui in pairs(CoreGui:GetChildren()) do
 		if gui:IsA("ScreenGui") and not gui.Name:find("Roblox") then
 			gui:Destroy()
 		end
 	end
-	return -- إيقاف نهائي للتشغيل
+	return
 end
 
 local Players = game:GetService("Players")
@@ -185,8 +184,71 @@ ScreenGui.Name = "Legendary_Core_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
--- Main Frame Setup
+---------------------------------------------------------
+-- 📱💻 نافذة اختيار الجهاز أولاً (ولا يظهر زر ADAM أبداً قبلها)
+---------------------------------------------------------
+local SelectorGui = Instance.new("Frame")
+SelectorGui.Size = UDim2.new(0, 320, 0, 190)
+SelectorGui.Position = UDim2.new(0.5, -160, 0.5, -95)
+SelectorGui.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+SelectorGui.BorderSizePixel = 0
+SelectorGui.Active = true
+SelectorGui.Draggable = true
+SelectorGui.Parent = ScreenGui
+
+local SelectorCorner = Instance.new("UICorner")
+SelectorCorner.CornerRadius = UDim.new(0, 14)
+SelectorCorner.Parent = SelectorGui
+
+local SelectorStroke = Instance.new("UIStroke")
+SelectorStroke.Thickness = 2
+SelectorStroke.Color = Color3.fromRGB(0, 255, 180)
+SelectorStroke.Parent = SelectorGui
+
+local SelectorTitle = Instance.new("TextLabel")
+SelectorTitle.Size = UDim2.new(1, 0, 0, 50)
+SelectorTitle.BackgroundTransparency = 1
+SelectorTitle.Text = "اختر نوع جهازك للتشغيل أولاً 🎮"
+SelectorTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectorTitle.TextSize = 15
+SelectorTitle.Font = Enum.Font.GothamBold
+SelectorTitle.Parent = SelectorGui
+
+-- زر الكمبيوتر في القائمة الأولى
+local PCBtn = Instance.new("TextButton")
+PCBtn.Size = UDim2.new(0.85, 0, 0, 45)
+PCBtn.Position = UDim2.new(0.075, 0, 0.35, 0)
+PCBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
+PCBtn.Text = "💻 كمبيوتر (PC Mode)"
+PCBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PCBtn.TextSize = 14
+PCBtn.Font = Enum.Font.GothamBold
+PCBtn.Parent = SelectorGui
+
+local PCCorner = Instance.new("UICorner")
+PCCorner.CornerRadius = UDim.new(0, 8)
+PCCorner.Parent = PCBtn
+
+-- زر الهاتف في القائمة الأولى
+local MobileBtn = Instance.new("TextButton")
+MobileBtn.Size = UDim2.new(0.85, 0, 0, 45)
+MobileBtn.Position = UDim2.new(0.075, 0, 0.65, 0)
+MobileBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 220)
+MobileBtn.Text = "📱 هاتف (Mobile Compact Mode)"
+MobileBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MobileBtn.TextSize = 13
+MobileBtn.Font = Enum.Font.GothamBold
+MobileBtn.Parent = SelectorGui
+
+local MobileCorner = Instance.new("UICorner")
+MobileCorner.CornerRadius = UDim.new(0, 8)
+MobileCorner.Parent = MobileBtn
+
+---------------------------------------------------------
+-- إعداد اللوحة الرئيسية (مخفية تماماً في البداية)
+---------------------------------------------------------
 local BaseWidth, BaseHeight = 310, 830
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 MainFrame.Position = UDim2.new(0.05, 0, 0.02, 0)
@@ -195,6 +257,7 @@ MainFrame.BackgroundTransparency = 0
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = false 
 MainFrame.Parent = ScreenGui
 
 local MainCorner = Instance.new("UICorner")
@@ -215,21 +278,22 @@ GradientStroke.Color = ColorSequence.new({
 GradientStroke.Parent = MainStroke
 
 ---------------------------------------------------------
--- PRO FLOATING TOGGLE BUTTON WITH EGYPT FLAG IMAGE
+-- زر ADAM العائم (يبدأ مخفي تماماً ولن يظهر إلا بعد اختيار الجهاز)
 ---------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "Legendary_ToggleBtn"
-ToggleBtn.Size = UDim2.new(0, 150, 0, 50)
+ToggleBtn.Size = UDim2.new(0, 140, 0, 45)
 ToggleBtn.Position = UDim2.new(0.02, 0, 0.2, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
 ToggleBtn.BackgroundTransparency = 0.15
 ToggleBtn.Text = ""
 ToggleBtn.Active = true
 ToggleBtn.Draggable = true
+ToggleBtn.Visible = false
 ToggleBtn.Parent = ScreenGui
 
 local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 25)
+ToggleCorner.CornerRadius = UDim.new(0, 22)
 ToggleCorner.Parent = ToggleBtn
 
 local ToggleStroke = Instance.new("UIStroke")
@@ -245,8 +309,8 @@ ToggleGradient.Color = ColorSequence.new({
 ToggleGradient.Parent = ToggleStroke
 
 local FlagIcon = Instance.new("ImageLabel")
-FlagIcon.Size = UDim2.new(0, 32, 0, 32)
-FlagIcon.Position = UDim2.new(0.08, 0, 0.5, -16)
+FlagIcon.Size = UDim2.new(0, 28, 0, 28)
+FlagIcon.Position = UDim2.new(0.08, 0, 0.5, -14)
 FlagIcon.BackgroundTransparency = 1
 FlagIcon.Image = "rbxassetid://111333712"
 FlagIcon.Parent = ToggleBtn
@@ -261,13 +325,32 @@ BtnText.Position = UDim2.new(0.38, 0, 0, 0)
 BtnText.BackgroundTransparency = 1
 BtnText.Text = "ADAM"
 BtnText.TextColor3 = Color3.fromRGB(255, 255, 255)
-BtnText.TextSize = 18
+BtnText.TextSize = 16
 BtnText.Font = Enum.Font.GothamBlack
 BtnText.TextXAlignment = Enum.TextXAlignment.Left
 BtnText.Parent = ToggleBtn
 
 ToggleBtn.MouseButton1Click:Connect(function()
 	MainFrame.Visible = not MainFrame.Visible
+end)
+
+---------------------------------------------------------
+-- تفعيل الأحداث بعد اختيار نوع الجهاز
+---------------------------------------------------------
+PCBtn.MouseButton1Click:Connect(function()
+	SelectorGui:Destroy()
+	BaseWidth, BaseHeight = 310, 830
+	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
+	MainFrame.Visible = true
+	ToggleBtn.Visible = true
+end)
+
+MobileBtn.MouseButton1Click:Connect(function()
+	SelectorGui:Destroy()
+	BaseWidth, BaseHeight = 265, 740
+	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
+	MainFrame.Visible = true
+	ToggleBtn.Visible = true
 end)
 ---------------------------------------------------------
 
@@ -375,12 +458,11 @@ local function CleanScript()
 
 	for _, conn in pairs(Connections) do if conn then conn:Disconnect() end end
 	ScreenGui:Destroy()
-	if ToggleBtn and ToggleBtn.Parent then ToggleBtn:Destroy() end
 end
 
 CloseUIBtn.MouseButton1Click:Connect(CleanScript)
 
--- حلقة مراقبة داخلية للتحكم الفوري لو غيرتها لـ false أثناء اللعب
+-- حلقة مراقبة صيانة داخلية تعمل أوتوماتيك لو غيرت ScriptEnabled لـ false أثناء اللعب
 task.spawn(function()
 	while task.wait(3) do
 		if ScriptEnabled == false then
@@ -409,7 +491,7 @@ LangBtnRef.MouseButton1Click:Connect(function()
 end)
 
 ---------------------------------------------------------
--- UI CONTROLS (أزرار السكريبت كاملة كما هي)
+-- UI CONTROLS (الأزرار والوظائف الأساسية)
 ---------------------------------------------------------
 
 local function createSimpleToggle(posY, textKeyAR, textKeyEN, onClick)
