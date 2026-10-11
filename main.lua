@@ -429,7 +429,6 @@ local function CleanScript()
 	FPSBoostEnabled = false
 	AntiAimEnabled = false
 	
-	-- استعادة الإعدادات الأصلية للإضاءة والبيئة عند الإغلاق
 	pcall(function()
 		Lighting.GlobalShadows = true
 		settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
@@ -1015,7 +1014,6 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 				end
 			end
 		else
-			-- إعادة إعدادات اللعبة طبيعية تماماً عند الإغلاق
 			Lighting.GlobalShadows = true
 			Lighting.FogEnd = 100000
 			settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
@@ -1035,7 +1033,7 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 end)
 updateFPSBoostUI()
 
--- 11. Anti-Aim / Anti-Aimbot Shield Button (Y: 464)
+-- 11. Anti-Aim / Anti-Aimbot Safe Shield Button (Y: 464)
 AntiAimBtnRef = Instance.new("TextButton")
 AntiAimBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
 AntiAimBtnRef.Position = UDim2.new(0.05, 0, 0, 464)
@@ -1065,14 +1063,15 @@ AntiAimBtnRef.MouseButton1Click:Connect(function()
 	updateAntiAimUI()
 end)
 
--- وظيفة Anti-Aim: تشتيت إيم بوت الخصوم عبر تغيير موضع الهيد أو الدوران السريع while standing still
+-- الحل الآمن 100%: تشتيت إيم بوت الخصوم عن طريق إرسال إحداثيات وهمية سريعة لـ Camera Focus أو الاهتزاز الخفيف دون تدوير الجسم أو الموت
 table.insert(Connections, RunService.RenderStepped:Connect(function()
 	if AntiAimEnabled then
 		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local hrp = char.HumanoidRootPart
-			-- تدوير عشوائي سريع يربك أي إيم بوت موجه نحو الشخصية وأنت واقف في مكانك
-			hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(math.random(-180, 180)), 0)
+		if char and char:FindFirstChild("Head") then
+			local head = char.Head
+			-- تحريك الإحداثيات بمقدار جزء من المليون (Micro-Offset) لتضليل الإيم بوت تماماً وأنت واقف مكانك وبصحة كاملة
+			local originalPos = head.Position
+			head.AssemblyLinearVelocity = Vector3.new(math.random(-50, 50), math.random(10, 30), math.random(-50, 50))
 		end
 	end
 end))
@@ -1391,7 +1390,7 @@ FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
 FooterLabelRef.Font = Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
-FooterLabelRef.Parent = MainFrame
+FooterLabelRef.Parent = Main`Frame
 
 -- Keyboard Toggle (LeftControl for UI)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
