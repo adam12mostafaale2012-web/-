@@ -1,6 +1,6 @@
 local Http = game:GetService("HttpService")
 
--- إضافة رقم عشوائي لمنع الـ Cache وتقرأ التعديل فوراً
+-- رابط ملف التحكم
 local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
 local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
 
@@ -8,7 +8,8 @@ local success, statusData = pcall(function()
     return Http:JSONDecode(game:HttpGet(statusURL))
 end)
 
-if success and statusData and statusData.enabled == true then
+-- نفحص لو الحالة مكتوب فيها "تشغيل" أو "true"
+if success and statusData and (statusData.status == "تشغيل" or statusData.enabled == true) then
     local scriptCode = game:HttpGet(mainURL)
     local loadedFunc, err = loadstring(scriptCode)
     
