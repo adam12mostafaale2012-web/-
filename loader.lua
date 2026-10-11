@@ -2,19 +2,15 @@ local Http = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
--- دالة لقراءة الحالة مع إجبار جيت هاب على التحديث الفوري
+-- دالة فحص حالة السكريبت
 local function getStatus()
-    -- بنزود تيك عشوائي مع رقم راندوم عشان نتجنب الكاش تماماً
-    local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick() .. math.random(1000, 9999)
+    local statusURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/status.json?v=" .. tick()
     local success, response = pcall(function()
         return game:HttpGet(statusURL)
     end)
     
     if success and response then
-        -- طباعة الرد في الـ F9 Output عشان نشوف هو بيقرا إيه بظبط!
-        print("Raw Response from GitHub:", response)
-        
-        -- لو الرد فيه كلمة true يبقي اشتغل، غير كده يعتبر صيانة
+        -- فحص وجود كلمة true داخل الملف
         if response:find("true") then
             return true
         end
@@ -22,7 +18,7 @@ local function getStatus()
     return false
 end
 
--- 1️⃣ الفحص قبل التشغيل
+-- 1️⃣ الفحص أول ما اللاعب يشغل السكريبت
 if getStatus() == true then
     local mainURL = "https://raw.githubusercontent.com/adam12mostafaale2012-web/-/refs/heads/main/main.lua?v=" .. tick()
     local scriptCode = game:HttpGet(mainURL)
@@ -32,12 +28,11 @@ if getStatus() == true then
         loadedFunc()
     end
     
-    -- 2️⃣ حلقة مراقبة ذكية أثناء اللعب
+    -- 2️⃣ حلقة مراقبة في الخلفية كل 3 ثواني للإيقاف الفوري
     task.spawn(function()
         while task.wait(3) do
-            -- لو الـ getStatus رجعت false (يعني مفيش كلمة true في الملف)
             if getStatus() == false then
-                -- إرسال الإشعار بالرسالة الخاصة بك
+                -- إشعار الصيانة الخاص بك
                 pcall(function()
                     StarterGui:SetCore("SendNotification", {
                         Title = "تنبيه صيانة",
@@ -59,6 +54,7 @@ if getStatus() == true then
     end)
 
 else
+    -- إشعار لو السكريبت مغلق من الأساس
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "تنبيه صيانة",
