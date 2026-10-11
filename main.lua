@@ -11,7 +11,7 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = true
+local ScriptEnabled = true  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة الفورية
@@ -19,7 +19,7 @@ local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
 			Title = "تنبيه صيانة",
-			Text = "نعتذر يوجد صيانة من المطور آدم يمكن غلق اللعبة وفتحها اذا لم يفتح لي فترة كبيرة من الوقت",
+			Text = "نعتذر يوجد صيانة من المطور آدم",
 			Duration = 6
 		})
 	end)
@@ -65,6 +65,9 @@ local HitboxSizeVal = 4
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
 
+-- Waypoint Save Variable
+local SavedPosition = nil
+
 local FollowPlatformPart = nil
 local BodyVelocity = nil
 local BodyGyro = nil
@@ -89,6 +92,7 @@ local CountryNamesAR = {
 -- UI References
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
 local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef
+local SavePosBtnRef, LoadPosBtnRef
 local CountryLabelRef, FooterLabelRef
 local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
@@ -113,11 +117,14 @@ local Translations = {
 		TeleportPlaceholder = "Player Name...",
 		ServerHopBtn = "Server Hop System",
 		UpdatesBtn = "Changelog / Updates 📜",
+		SavePosBtn = "Save Position 📍",
+		LoadPosBtn = "Teleport to Saved 🚀",
 		UpdatesTitleText = "📜 Script Changelog & Features",
 		UpdatesLogText = [[
 ⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
 
-v2.5 (Current Build):
+v2.6 (Current Build):
+• Added Save Position & Teleport Waypoint System.
 • Added Updates & Changelog Window.
 • Restored Classic Glow Theme.
 • Optimized Script Speed & Performance.
@@ -162,12 +169,15 @@ v1.0:
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
 		ServerHopBtn = "نظام تبديل السيرفرات",
 		UpdatesBtn = "التحديثات السابقة 📜",
+		SavePosBtn = "حفظ المكان الحالي 📍",
+		LoadPosBtn = "الانتقال للمكان المحفوظ 🚀",
 		UpdatesTitleText = "📜 سجل التحديثات والمميزات",
 		UpdatesLogText = [[
 ⚡ ADAM & YASEEN CONTROLLER HISTORY ⚡
 
-v2.5 (التحديث الحالي):
-• إضـافـة نـافـذة وسـجـل الـتـحـديـثـات (Changelog).
+v2.6 (التحديث الحالي):
+• إضـافـة نـظام حفظ المـكان والانـتـقال إليه (Waypoints).
+• إضافة نافذة وسجل التحديثات (Changelog).
 • استرجاع التصميم الأساسي الأصلي مع التوهج الهادئ.
 • تحسين سرعة الأزرار والأداء العام للسكربت.
 
@@ -282,9 +292,9 @@ MobileCorner.CornerRadius = UDim.new(0, 8)
 MobileCorner.Parent = MobileBtn
 
 ---------------------------------------------------------
--- إعداد اللوحة الرئيسية
+-- إعداد اللوحة الرئيسية (تم زيادة الطول لتستوعب الأزرار الجديدة)
 ---------------------------------------------------------
-local BaseWidth, BaseHeight = 310, 880
+local BaseWidth, BaseHeight = 310, 930
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
@@ -376,7 +386,7 @@ end)
 ---------------------------------------------------------
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 310, 880
+	BaseWidth, BaseHeight = 310, 930
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
@@ -384,7 +394,7 @@ end)
 
 MobileBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
-	BaseWidth, BaseHeight = 265, 780
+	BaseWidth, BaseHeight = 265, 830
 	MainFrame.Size = UDim2.new(0, BaseWidth, 0, BaseHeight)
 	MainFrame.Visible = true
 	ToggleBtn.Visible = true
@@ -526,6 +536,8 @@ LangBtnRef.MouseButton1Click:Connect(function()
 	TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
 	ServerHopPanelBtnRef.Text = Translations[CurrentLang].ServerHopBtn
 	UpdatesPanelBtnRef.Text = Translations[CurrentLang].UpdatesBtn
+	SavePosBtnRef.Text = Translations[CurrentLang].SavePosBtn
+	LoadPosBtnRef.Text = Translations[CurrentLang].LoadPosBtn
 	UpdatesTitle.Text = Translations[CurrentLang].UpdatesTitleText
 	UpdatesTextLabel.Text = Translations[CurrentLang].UpdatesLogText
 	FooterLabelRef.Text = Translations[CurrentLang].Footer
@@ -1134,10 +1146,72 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	end
 end))
 
--- 12. Teleport to Player Section (Y: 504)
+-- 12. Save Position & Teleport to Saved Position Buttons (Y: 504)
+SavePosBtnRef = Instance.new("TextButton")
+SavePosBtnRef.Size = UDim2.new(0.43, 0, 0, 32)
+SavePosBtnRef.Position = UDim2.new(0.05, 0, 0, 504)
+SavePosBtnRef.BackgroundColor3 = Color3.fromRGB(200, 140, 0)
+SavePosBtnRef.BackgroundTransparency = 0.35
+SavePosBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+SavePosBtnRef.TextSize = 10
+SavePosBtnRef.Font = Enum.Font.GothamBold
+SavePosBtnRef.Text = Translations[CurrentLang].SavePosBtn
+SavePosBtnRef.Parent = MainFrame
+
+local SavePosCorner = Instance.new("UICorner")
+SavePosCorner.CornerRadius = UDim.new(0, 6)
+SavePosCorner.Parent = SavePosBtnRef
+
+LoadPosBtnRef = Instance.new("TextButton")
+LoadPosBtnRef.Size = UDim2.new(0.43, 0, 0, 32)
+LoadPosBtnRef.Position = UDim2.new(0.52, 0, 0, 504)
+LoadPosBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 110)
+LoadPosBtnRef.BackgroundTransparency = 0.35
+LoadPosBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadPosBtnRef.TextSize = 10
+LoadPosBtnRef.Font = Enum.Font.GothamBold
+LoadPosBtnRef.Text = Translations[CurrentLang].LoadPosBtn
+LoadPosBtnRef.Parent = MainFrame
+
+local LoadPosCorner = Instance.new("UICorner")
+LoadPosCorner.CornerRadius = UDim.new(0, 6)
+LoadPosCorner.Parent = LoadPosBtnRef
+
+SavePosBtnRef.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	if char and char:FindFirstChild("HumanoidRootPart") then
+		SavedPosition = char.HumanoidRootPart.CFrame
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "تم الحفظ 📍",
+				Text = "تم حفظ المكان الحالي بنجاح يا باشمهندس آدم",
+				Duration = 3
+			})
+		end)
+	end
+end)
+
+LoadPosBtnRef.MouseButton1Click:Connect(function()
+	if SavedPosition then
+		local char = LocalPlayer.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			char.HumanoidRootPart.CFrame = SavedPosition + Vector3.new(0, 3, 0)
+		end
+	else
+		pcall(function()
+			StarterGui:SetCore("SendNotification", {
+				Title = "تنبيه ⚠️",
+				Text = "لم تقم بحفظ أي مكان بعد!",
+				Duration = 3
+			})
+		end)
+	end
+end)
+
+-- 13. Teleport to Player Section (Y: 544)
 TeleportInputRef = Instance.new("TextBox")
 TeleportInputRef.Size = UDim2.new(0.58, 0, 0, 32)
-TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 504)
+TeleportInputRef.Position = UDim2.new(0.05, 0, 0, 544)
 TeleportInputRef.BackgroundTransparency = 0.4
 TeleportInputRef.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 TeleportInputRef.Text = ""
@@ -1153,7 +1227,7 @@ TeleportInputCorner.Parent = TeleportInputRef
 
 TeleportBtnRef = Instance.new("TextButton")
 TeleportBtnRef.Size = UDim2.new(0.29, 0, 0, 32)
-TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 504)
+TeleportBtnRef.Position = UDim2.new(0.66, 0, 0, 544)
 TeleportBtnRef.BackgroundColor3 = Color3.fromRGB(0, 160, 220)
 TeleportBtnRef.BackgroundTransparency = 0.3
 TeleportBtnRef.Text = Translations[CurrentLang].TeleportBtn
@@ -1184,10 +1258,10 @@ TeleportBtnRef.MouseButton1Click:Connect(function()
 	end
 end)
 
--- 13. Server Hop System Button (Y: 544)
+-- 14. Server Hop System Button (Y: 584)
 ServerHopPanelBtnRef = Instance.new("TextButton")
 ServerHopPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 544)
+ServerHopPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 584)
 ServerHopPanelBtnRef.BackgroundColor3 = Color3.fromRGB(80, 50, 180)
 ServerHopPanelBtnRef.BackgroundTransparency = 0.35
 ServerHopPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1342,10 +1416,10 @@ AutoHopBtn.MouseButton1Click:Connect(function()
 	AutoHopBtn.BackgroundColor3 = AutoHopEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
 end)
 
--- 14. Updates Panel Button (Y: 584)
+-- 15. Updates Panel Button (Y: 624)
 UpdatesPanelBtnRef = Instance.new("TextButton")
 UpdatesPanelBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-UpdatesPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 584)
+UpdatesPanelBtnRef.Position = UDim2.new(0.05, 0, 0, 624)
 UpdatesPanelBtnRef.BackgroundColor3 = Color3.fromRGB(0, 150, 180)
 UpdatesPanelBtnRef.BackgroundTransparency = 0.35
 UpdatesPanelBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1358,7 +1432,7 @@ local UpdatesCorner = Instance.new("UICorner")
 UpdatesCorner.CornerRadius = UDim.new(0, 6)
 UpdatesCorner.Parent = UpdatesPanelBtnRef
 
--- Updates Window / Frame (كبرنا الحجم والخط ليكون أوضح)
+-- Updates Window / Frame
 UpdatesFrame = Instance.new("Frame")
 UpdatesFrame.Size = UDim2.new(0, 310, 0, 320)
 UpdatesFrame.Position = UDim2.new(1.05, 0, 0, 0)
@@ -1409,14 +1483,14 @@ UpdatesScroll.Position = UDim2.new(0.05, 0, 0.14, 0)
 UpdatesScroll.BackgroundTransparency = 1
 UpdatesScroll.BorderSizePixel = 0
 UpdatesScroll.ScrollBarThickness = 5
-UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 550) -- كبرنا المسافة عشان الخط الكبير
+UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 580)
 UpdatesScroll.Parent = UpdatesFrame
 
 UpdatesTextLabel = Instance.new("TextLabel")
-UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 540)
+UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 570)
 UpdatesTextLabel.BackgroundTransparency = 1
 UpdatesTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-UpdatesTextLabel.TextSize = 12 -- تكبير حجم الخط لسهولة القراءة
+UpdatesTextLabel.TextSize = 12
 UpdatesTextLabel.Font = Enum.Font.GothamBold
 UpdatesTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 UpdatesTextLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1433,10 +1507,10 @@ UpdatesCloseBtn.MouseButton1Click:Connect(function()
 	UpdatesFrame.Visible = false
 end)
 
--- 15. Region / Country Label (Y: 664)
+-- 16. Region / Country Label (Y: 704)
 CountryLabelRef = Instance.new("TextLabel")
 CountryLabelRef.Size = UDim2.new(0.9, 0, 0, 28)
-CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 664)
+CountryLabelRef.Position = UDim2.new(0.05, 0, 0, 704)
 CountryLabelRef.BackgroundTransparency = 1
 CountryLabelRef.Text = Translations[CurrentLang].CountryLoading
 CountryLabelRef.TextColor3 = Color3.fromRGB(0, 210, 255)
@@ -1461,10 +1535,11 @@ task.spawn(function()
 	end
 end)
 
--- 16. Footer Label (Y: 700)
+-- 17. Footer Label (Y: 742)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
-FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 700)
+FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 742)
+FooterLabelRef.BackgroundTransparency = 0
 FooterLabelRef.BackgroundTransparency = 1
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
