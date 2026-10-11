@@ -7,7 +7,7 @@ local localPlayer = Players.LocalPlayer
 -- ⚙️ لوحة التحكم الرئيسية:
 -- true  = السكريبت متاح للتشغيل
 -- false = السكريبت مقفول نهائياً (القرار ثابت على الجميع حتى لو دخلوا ماب تانية)
-local ScriptEnabled = true  
+local ScriptEnabled = false  
 ---------------------------------------------------------
 
 local function showMaintenanceNotice()
