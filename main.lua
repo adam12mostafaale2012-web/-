@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.1 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.2 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -11,7 +11,7 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = false  
+local ScriptEnabled = true  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة الفورية
@@ -77,6 +77,7 @@ local BodyGyro = nil
 local Connections = {}
 local HighlightsTable = {}
 local MM2HighlightsTable = {}
+local HitboxPartsTable = {}
 
 -- Server Hop Variables
 local AutoHopEnabled = false
@@ -153,7 +154,7 @@ local Translations = {
 6. 👁️ Player ESP: Highlights all players across walls.
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. 🎯 ARHANGELS HITBOX: Expand target hitboxes with size adjustment (+ / -).
+9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly without freezing player movements (+ / -).
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -219,7 +220,7 @@ local Translations = {
 6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران.
 7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
 8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بالقيم (+ / -).
+9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة وبدون تثبيت حركتهم (+ / -).
 10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
 11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
 12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
@@ -519,17 +520,11 @@ local function CleanScript()
 		settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
 	end)
 	
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer and player.Character then
-			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-			if hrp then
-				hrp.Size = Vector3.new(2, 2, 1)
-				hrp.Transparency = 1
-				hrp.CanCollide = true
-			end
-		end
+	for _, part in pairs(HitboxPartsTable) do
+		if part and part.Parent then part:Destroy() end
 	end
-	
+	HitboxPartsTable = {}
+
 	if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
 	if BodyGyro then BodyGyro:Destroy() BodyGyro = nil end
 	if FollowPlatformPart then FollowPlatformPart:Destroy() FollowPlatformPart = nil end
@@ -1027,7 +1022,7 @@ table.insert(Connections, UserInputService.JumpRequest:Connect(function()
 	end
 end))
 
--- 9. ARHANGELS TEAM Button (Y: 384)
+-- 9. ARHANGELS TEAM Button (Y: 384) - [SMART HITBOX SYSTEM]
 ArhangelsBtnRef = Instance.new("TextButton")
 ArhangelsBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
 ArhangelsBtnRef.Position = UDim2.new(0.05, 0, 0, 384)
@@ -1051,24 +1046,68 @@ updateArhangelsUI = function()
 end
 table.insert(UIUpdaters, updateArhangelsUI)
 
+local function ClearAllHitboxes()
+	for _, part in pairs(HitboxPartsTable) do
+		if part and part.Parent then part:Destroy() end
+	end
+	HitboxPartsTable = {}
+end
+
 ArhangelsBtnRef.MouseButton1Click:Connect(function()
 	ArhangelsTeamEnabled = not ArhangelsTeamEnabled
 	updateArhangelsUI()
 	
 	if not ArhangelsTeamEnabled then
-		for _, player in pairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer and player.Character then
-				local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-				if hrp then
-					hrp.Size = Vector3.new(2, 2, 1)
-					hrp.Transparency = 1
-					hrp.CanCollide = true
+		ClearAllHitboxes()
+	end
+end)
+updateArhangelsUI()
+
+table.insert(Connections, RunService.RenderStepped:Connect(function()
+	if not ArhangelsTeamEnabled then return end
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local char = player.Character
+			local hrp = char and char:FindFirstChild("HumanoidRootPart")
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			
+			if hrp and humanoid and humanoid.Health > 0 then
+				local hitbox = HitboxPartsTable[player]
+				
+				if not hitbox or not hitbox.Parent then
+					hitbox = Instance.new("Part")
+					hitbox.Name = "Adam_Expanded_Hitbox"
+					hitbox.Shape = Enum.PartType.Block
+					hitbox.Material = Enum.Material.ForceField
+					hitbox.Color = CurrentThemeColor
+					hitbox.Transparency = 0.7
+					hitbox.CanCollide = false
+					hitbox.Massless = true
+					hitbox.Anchored = false
+					hitbox.Parent = char
+					
+					local weld = Instance.new("Weld")
+					weld.Name = "HitboxWeld"
+					weld.Part0 = hrp
+					weld.Part1 = hitbox
+					weld.C0 = CFrame.new(0, 0, 0)
+					weld.Parent = hitbox
+					
+					HitboxPartsTable[player] = hitbox
+				end
+				
+				hitbox.Size = Vector3.new(HitboxSizeVal, HitboxSizeVal, HitboxSizeVal)
+				hitbox.Color = CurrentThemeColor
+			else
+				if HitboxPartsTable[player] then
+					HitboxPartsTable[player]:Destroy()
+					HitboxPartsTable[player] = nil
 				end
 			end
 		end
 	end
-end)
-updateArhangelsUI()
+end))
 
 -- 10. FPS Boost / Anti-Lag Button (Y: 424)
 FPSBoostBtnRef = Instance.new("TextButton")
@@ -1189,22 +1228,6 @@ HitboxPlusBtn.MouseButton1Click:Connect(function()
 	HitboxSizeVal = math.clamp(HitboxSizeVal + 1, 1, 50)
 	HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
 end)
-
-table.insert(Connections, RunService.RenderStepped:Connect(function()
-	if ArhangelsTeamEnabled then
-		for _, player in pairs(Players:GetPlayers()) do
-			if player ~= LocalPlayer and player.Character then
-				local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-				if hrp then
-					hrp.Size = Vector3.new(HitboxSizeVal, HitboxSizeVal, HitboxSizeVal)
-					hrp.Transparency = 0.6
-					hrp.CanCollide = false
-					hrp.Massless = true
-				end
-			end
-		end
-	end
-end))
 
 -- دالة الانتقال للمكان المحفوظ
 local function TeleportToSavedWaypoint()
