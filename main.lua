@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.6 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V4.1 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -48,7 +48,7 @@ local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Global States & Variables
+-- Global States & Variables (الافتراضي عربي فوراً من أول فتح)
 local CurrentLang = "AR"
 local SpeedEnabled = false
 local NoclipEnabled = false
@@ -58,9 +58,10 @@ local InstantInteractEnabled = false
 local ESPEnabled = false
 local MM2ESPEnabled = false
 local MultiJumpEnabled = false
-local ArhangelsTeamEnabled = false
 local FPSBoostEnabled = false
-local HitboxSizeVal = 4
+
+-- متغير حماية زر السكربت الخارجي لمنع التكرار نهائياً
+local MvsExecuted = false
 
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
@@ -77,7 +78,6 @@ local BodyGyro = nil
 local Connections = {}
 local HighlightsTable = {}
 local MM2HighlightsTable = {}
-local HitboxPartsTable = {}
 
 -- Server Hop Variables
 local AutoHopEnabled = false
@@ -98,7 +98,7 @@ local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
 local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef, ThemePanelBtnRef
 local SavePosBtnRef, LoadPosBtnRef
 local CountryLabelRef, FooterLabelRef
-local ArhangelsBtnRef, HitboxLabelRef, FPSBoostBtnRef
+local MVSButtonRef, FPSBoostBtnRef
 local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, HopOnceBtn, AutoHopBtn
 local UpdatesFrame, UpdatesCloseBtn, UpdatesTitle, UpdatesTextLabel, UpdatesScroll
 local ThemeFrame, ThemeCloseBtn, ThemeTitleText, ThemeGreenBtn, ThemeRedBtn, ThemeBlueBtn, ThemePurpleBtn
@@ -115,9 +115,9 @@ local Translations = {
 		ESPText = "Player Wallhack ESP",
 		MM2ESPText = "Murder Mystery 2 Roles Reveal 🔪",
 		MultiJumpText = "Infinite Air Jump",
-		ArhangelsText = "ARHANGELS TEAM HITBOX",
+		MvsText = "Murderers VS Sheriffs Hub 🔪",
+		MvsLoaded = "✅ Hub Already Loaded!",
 		FPSBoostText = "FPS Boost & Anti-Lag 🚀",
-		HitboxText = "Hitbox Size Control",
 		TeleportBtn = "Teleport 🚀",
 		TeleportPlaceholder = "Enter Player Name...",
 		ServerHopBtn = "Server Hop Switcher",
@@ -151,10 +151,10 @@ local Translations = {
 3. 👻 Wall Noclip: Walk directly through walls and obstacles.
 4. 🏗️ Quantum Platform: Creates a neon platform below player (Hotkey: F).
 5. ⚡ Instant Interact: Instant proximity prompts activation (0 Hold Delay).
-6. 👁️ Player ESP: Highlights all players with flawless auto-respawn sync[cite: 2].
+6. 👁️ Player ESP: Highlights all players with flawless auto-respawn sync.
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly with auto-respawn sync[cite: 2] (+ / -).
+9. ⚔️ Murderers VS Sheriffs Hub: One-time secure loader with anti-spam lock.
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -181,9 +181,9 @@ local Translations = {
 		ESPText = "كشف اللاعبين عبر الجدران",
 		MM2ESPText = "كشف أدوار MM2 🔪",
 		MultiJumpText = "القفز المتعدد اللانهائي",
-		ArhangelsText = "توسيع الهيت بوكس (Hitbox)",
+		MvsText = "سكربت Murders vs Sheriffs 🔪",
+		MvsLoaded = "✅ تم تفعيل السكربت مسبقاً!",
 		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
-		HitboxText = "Hitbox Size",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
 		ServerHopBtn = "نظام تبديل السيرفرات",
@@ -217,10 +217,10 @@ local Translations = {
 3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
 4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
 5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
-6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي الفوري عند الموت والرسبون[cite: 2].
+6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي عند الموت والرسبون.
 7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
 8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة مع تحديث تلقائي عند موت ورسبون اللاعبين[cite: 2] (+ / -).
+9. ⚔️ تشغيل سكربت Murderers VS Sheriffs بضغطة واحدة مع نظام حماية تام من التكرار.
 10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
 11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
 12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
@@ -256,10 +256,12 @@ task.spawn(function()
 	end)
 end)
 
--- Create Screen GUI Safely
+-- منع التكرار: حذف أي واجهة قديمة فوراً لو كانت موجودة قبل تشغيل الجديدة
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-if PlayerGui:FindFirstChild("Legendary_Core_UI") then
-	PlayerGui["Legendary_Core_UI"]:Destroy()
+for _, gui in pairs(PlayerGui:GetChildren()) do
+	if gui.Name == "Legendary_Core_UI" then
+		gui:Destroy()
+	end
 end
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -511,7 +513,6 @@ local function CleanScript()
 	ESPEnabled = false
 	MM2ESPEnabled = false
 	MultiJumpEnabled = false
-	ArhangelsTeamEnabled = false
 	AutoHopEnabled = false
 	FPSBoostEnabled = false
 	
@@ -519,11 +520,6 @@ local function CleanScript()
 		Lighting.GlobalShadows = true
 		settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
 	end)
-	
-	for _, part in pairs(HitboxPartsTable) do
-		if part and part.Parent then part:Destroy() end
-	end
-	HitboxPartsTable = {}
 
 	for _, hl in pairs(HighlightsTable) do
 		if hl and hl.Parent then hl:Destroy() end
@@ -569,7 +565,7 @@ task.spawn(function()
 end)
 
 local UIUpdaters = {}
-local updateSpeedUI, updateFlyUI, updateArhangelsUI, updateFPSBoostUI
+local updateSpeedUI, updateFlyUI, updateMvsUI, updateFPSBoostUI
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
@@ -1039,94 +1035,43 @@ table.insert(Connections, UserInputService.JumpRequest:Connect(function()
 	end
 end))
 
--- 9. ARHANGELS TEAM Button (Y: 384) - [SMART AUTO-RESPAWN HITBOX SYSTEM]
-ArhangelsBtnRef = Instance.new("TextButton")
-ArhangelsBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
-ArhangelsBtnRef.Position = UDim2.new(0.05, 0, 0, 384)
-ArhangelsBtnRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
-ArhangelsBtnRef.BackgroundTransparency = 0.35
-ArhangelsBtnRef.TextColor3 = Color3.fromRGB(255, 255, 255)
-ArhangelsBtnRef.TextSize = 10
-ArhangelsBtnRef.Font = Enum.Font.GothamSemibold
-ArhangelsBtnRef.Parent = MainFrame
+-- 9. Murderers VS Sheriffs Hub Button (Y: 384) [ONE-TIME EXECUTOR BUTTON WITH DEBOUNCE LOCK]
+MVSButtonRef = Instance.new("TextButton")
+MVSButtonRef.Size = UDim2.new(0.9, 0, 0, 32)
+MVSButtonRef.Position = UDim2.new(0.05, 0, 0, 384)
+MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+MVSButtonRef.BackgroundTransparency = 0.3
+MVSButtonRef.TextColor3 = Color3.fromRGB(255, 255, 255)
+MVSButtonRef.TextSize = 10
+MVSButtonRef.Font = Enum.Font.GothamBold
+MVSButtonRef.Parent = MainFrame
 
-local ArhangelsCorner = Instance.new("UICorner")
-ArhangelsCorner.CornerRadius = UDim.new(0, 6)
-ArhangelsCorner.Parent = ArhangelsBtnRef
+local MVSButtonCorner = Instance.new("UICorner")
+MVSButtonCorner.CornerRadius = UDim.new(0, 6)
+MVSButtonCorner.Parent = MVSButtonRef
 
-updateArhangelsUI = function()
-	local lang = Translations[CurrentLang]
-	local status = ArhangelsTeamEnabled and lang.ON or lang.OFF
-	ArhangelsBtnRef.Text = "ARHANGELS TEAM: " .. status
-	ArhangelsBtnRef.BackgroundColor3 = ArhangelsTeamEnabled and Color3.fromRGB(0, 180, 110) or Color3.fromRGB(180, 45, 45)
-	ArhangelsBtnRef.BackgroundTransparency = 0.35
-end
-table.insert(UIUpdaters, updateArhangelsUI)
-
-local function ClearAllHitboxes()
-	for player, part in pairs(HitboxPartsTable) do
-		if part and part.Parent then part:Destroy() end
+updateMvsUI = function()
+	if MvsExecuted then
+		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsLoaded or Translations.EN.MvsLoaded
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(60, 120, 80)
+	else
+		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsText or Translations.EN.MvsText
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
 	end
-	HitboxPartsTable = {}
 end
+table.insert(UIUpdaters, updateMvsUI)
+updateMvsUI()
 
-ArhangelsBtnRef.MouseButton1Click:Connect(function()
-	ArhangelsTeamEnabled = not ArhangelsTeamEnabled
-	updateArhangelsUI()
+MVSButtonRef.MouseButton1Click:Connect(function()
+	if MvsExecuted then return end -- منع الضغط المتكرر تماماً لو تم تفعيله مسبقاً
+	MvsExecuted = true
 	
-	if not ArhangelsTeamEnabled then
-		ClearAllHitboxes()
-	end
+	updateMvsUI()
+
+	pcall(function()
+		loadstring(game:HttpGet("https://rawscripts.net/raw/Murderers-VS-Sheriffs-DUELS-Murders-vs-Sheriffs-66524"))()
+	end)
 end)
-updateArhangelsUI()
-
-table.insert(Connections, RunService.RenderStepped:Connect(function()
-	if not ArhangelsTeamEnabled then return end
-	
-	for _, player in pairs(Players:GetPlayers()) do
-		if player ~= LocalPlayer then
-			local char = player.Character
-			local hrp = char and char:FindFirstChild("HumanoidRootPart")
-			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-			
-			if hrp and humanoid and humanoid.Health > 0 then
-				local hitbox = HitboxPartsTable[player]
-				
-				if not hitbox or not hitbox.Parent or hitbox.Parent ~= char then
-					if hitbox then pcall(function() hitbox:Destroy() end) end
-					
-					hitbox = Instance.new("Part")
-					hitbox.Name = "Adam_Expanded_Hitbox"
-					hitbox.Shape = Enum.PartType.Block
-					hitbox.Material = Enum.Material.ForceField
-					hitbox.Color = CurrentThemeColor
-					hitbox.Transparency = 0.7
-					hitbox.CanCollide = false
-					hitbox.Massless = true
-					hitbox.Anchored = false
-					hitbox.Parent = char
-					
-					local weld = Instance.new("Weld")
-					weld.Name = "HitboxWeld"
-					weld.Part0 = hrp
-					weld.Part1 = hitbox
-					weld.C0 = CFrame.new(0, 0, 0)
-					weld.Parent = hitbox
-					
-					HitboxPartsTable[player] = hitbox
-				end
-				
-				hitbox.Size = Vector3.new(HitboxSizeVal, HitboxSizeVal, HitboxSizeVal)
-				hitbox.Color = CurrentThemeColor
-			else
-				if HitboxPartsTable[player] then
-					pcall(function() HitboxPartsTable[player]:Destroy() end)
-					HitboxPartsTable[player] = nil
-				end
-			end
-		end
-	end
-end))
 
 -- 10. FPS Boost / Anti-Lag Button (Y: 424)
 FPSBoostBtnRef = Instance.new("TextButton")
@@ -1196,56 +1141,20 @@ FPSBoostBtnRef.MouseButton1Click:Connect(function()
 end)
 updateFPSBoostUI()
 
--- 11. Hitbox Size Section (Y: 464)
-HitboxLabelRef = Instance.new("TextLabel")
-HitboxLabelRef.Size = UDim2.new(0.35, 0, 0, 32)
-HitboxLabelRef.Position = UDim2.new(0.05, 0, 0, 464)
-HitboxLabelRef.BackgroundTransparency = 1
-HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
-HitboxLabelRef.TextColor3 = Color3.fromRGB(255, 255, 255)
-HitboxLabelRef.TextSize = 10
-HitboxLabelRef.Font = Enum.Font.GothamBold
-HitboxLabelRef.TextXAlignment = Enum.TextXAlignment.Left
-HitboxLabelRef.Parent = MainFrame
+-- 11. Spacer Label (Y: 464)
+local HitboxSpacerLabel = Instance.new("TextLabel")
+HitboxSpacerLabel.Size = UDim2.new(0.9, 0, 0, 32)
+HitboxSpacerLabel.Position = UDim2.new(0.05, 0, 0, 464)
+HitboxSpacerLabel.BackgroundTransparency = 1
+HitboxSpacerLabel.Text = (CurrentLang == "AR") and "⚡ سكربتات وتحكم متقدم ⚡" or "⚡ Advanced Controls & Tools ⚡"
+HitboxSpacerLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+HitboxSpacerLabel.TextSize = 10
+HitboxSpacerLabel.Font = Enum.Font.GothamBold
+HitboxSpacerLabel.TextXAlignment = Enum.TextXAlignment.Center
+HitboxSpacerLabel.Parent = MainFrame
 
-local HitboxMinusBtn = Instance.new("TextButton")
-HitboxMinusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxMinusBtn.Position = UDim2.new(0.42, 0, 0, 464)
-HitboxMinusBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-HitboxMinusBtn.BackgroundTransparency = 0.3
-HitboxMinusBtn.Text = "-"
-HitboxMinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-HitboxMinusBtn.TextSize = 14
-HitboxMinusBtn.Font = Enum.Font.GothamBold
-HitboxMinusBtn.Parent = MainFrame
-
-local MinusCorner = Instance.new("UICorner")
-MinusCorner.CornerRadius = UDim.new(0, 6)
-MinusCorner.Parent = HitboxMinusBtn
-
-local HitboxPlusBtn = Instance.new("TextButton")
-HitboxPlusBtn.Size = UDim2.new(0.24, 0, 0, 32)
-HitboxPlusBtn.Position = UDim2.new(0.71, 0, 0, 464)
-HitboxPlusBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
-HitboxPlusBtn.BackgroundTransparency = 0.3
-HitboxPlusBtn.Text = "+"
-HitboxPlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-HitboxPlusBtn.TextSize = 14
-HitboxPlusBtn.Font = Enum.Font.GothamBold
-HitboxPlusBtn.Parent = MainFrame
-
-local PlusCorner = Instance.new("UICorner")
-PlusCorner.CornerRadius = UDim.new(0, 6)
-PlusCorner.Parent = HitboxPlusBtn
-
-HitboxMinusBtn.MouseButton1Click:Connect(function()
-	HitboxSizeVal = math.clamp(HitboxSizeVal - 1, 1, 50)
-	HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
-end)
-
-HitboxPlusBtn.MouseButton1Click:Connect(function()
-	HitboxSizeVal = math.clamp(HitboxSizeVal + 1, 1, 50)
-	HitboxLabelRef.Text = "Hitbox Size: " .. HitboxSizeVal
+table.insert(UIUpdaters, function()
+	HitboxSpacerLabel.Text = (CurrentLang == "AR") and "⚡ سكربتات وتحكم متقدم ⚡" or "⚡ Advanced Controls & Tools ⚡"
 end)
 
 -- دالة الانتقال للمكان المحفوظ
@@ -1785,13 +1694,15 @@ FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 780)
 FooterLabelRef.BackgroundTransparency = 0.35
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
-FooterLabelRef.TextSize, FooterLabelRef.Font = 9, Enum.Font.Gotham
+FooterLabelRef.TextSize = 9
+FooterLabelRef.Font = Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
 FooterLabelRef.Parent = MainFrame
 
 -- Keyboard Shortcuts (LeftControl for UI Toggle)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
+	
 	if input.KeyCode == Enum.KeyCode.LeftControl then
 		MainFrame.Visible = not MainFrame.Visible
 	end
