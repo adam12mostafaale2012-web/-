@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.3 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.6 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -151,10 +151,10 @@ local Translations = {
 3. 👻 Wall Noclip: Walk directly through walls and obstacles.
 4. 🏗️ Quantum Platform: Creates a neon platform below player (Hotkey: F).
 5. ⚡ Instant Interact: Instant proximity prompts activation (0 Hold Delay).
-6. 👁️ Player ESP: Highlights all players across walls.
+6. 👁️ Player ESP: Highlights all players with flawless auto-respawn sync[cite: 2].
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly with auto-respawn sync (+ / -).
+9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly with auto-respawn sync[cite: 2] (+ / -).
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -217,10 +217,10 @@ local Translations = {
 3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
 4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
 5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
-6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران.
+6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي الفوري عند الموت والرسبون[cite: 2].
 7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
 8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة مع تحديث تلقائي عند موت ورسبون اللاعبين (+ / -).
+9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة مع تحديث تلقائي عند موت ورسبون اللاعبين[cite: 2] (+ / -).
 10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
 11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
 12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
@@ -525,12 +525,15 @@ local function CleanScript()
 	end
 	HitboxPartsTable = {}
 
+	for _, hl in pairs(HighlightsTable) do
+		if hl and hl.Parent then hl:Destroy() end
+	end
+	HighlightsTable = {}
+
 	if BodyVelocity then BodyVelocity:Destroy() BodyVelocity = nil end
 	if BodyGyro then BodyGyro:Destroy() BodyGyro = nil end
 	if FollowPlatformPart then FollowPlatformPart:Destroy() FollowPlatformPart = nil end
 
-	for _, highlight in pairs(HighlightsTable) do if highlight then highlight:Destroy() end end
-	HighlightsTable = {}
 	for _, highlight in pairs(MM2HighlightsTable) do if highlight then highlight:Destroy() end end
 	MM2HighlightsTable = {}
 
@@ -918,33 +921,46 @@ table.insert(Connections, ProximityPromptService.PromptShown:Connect(function(pr
 	if InstantInteractEnabled then prompt.HoldDuration = 0 end
 end))
 
--- 6. Player ESP Button (Y: 264)
-local function applyESPToCharacter(player, char)
-	if not ESPEnabled or not char then return end
-	local existing = char:FindFirstChild("Player_ESP")
-	if existing then existing:Destroy() end
-	local hl = Instance.new("Highlight")
-	hl.Name = "Player_ESP"
-	hl.Adornee = char
-	hl.FillColor = Color3.fromRGB(255, 45, 45)
-	hl.FillTransparency = 0.5
-	hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-	hl.OutlineTransparency = 0
-	hl.Parent = char
-	HighlightsTable[player] = hl
-end
-
+-- 6. Player ESP Button (Y: 264) - [SMART AUTO-RESPAWN ESP SYSTEM]
 createSimpleToggle(264, Translations.AR.ESPText, Translations.EN.ESPText, function(enabled)
 	ESPEnabled = enabled
+	if not ESPEnabled then
+		for _, hl in pairs(HighlightsTable) do
+			if hl and hl.Parent then hl:Destroy() end
+		end
+		HighlightsTable = {}
+	end
+end)
+
+table.insert(Connections, RunService.RenderStepped:Connect(function()
+	if not ESPEnabled then return end
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer then
-			if ESPEnabled and player.Character then applyESPToCharacter(player, player.Character)
+			local char = player.Character
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			if char and humanoid and humanoid.Health > 0 then
+				local hl = HighlightsTable[player]
+				if not hl or not hl.Parent or hl.Adornee ~= char then
+					if hl then pcall(function() hl:Destroy() end) end
+					hl = Instance.new("Highlight")
+					hl.Name = "Player_ESP"
+					hl.Adornee = char
+					hl.FillColor = Color3.fromRGB(255, 45, 45)
+					hl.FillTransparency = 0.5
+					hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+					hl.OutlineTransparency = 0
+					hl.Parent = char
+					HighlightsTable[player] = hl
+				end
 			else
-				if HighlightsTable[player] then HighlightsTable[player]:Destroy() HighlightsTable[player] = nil end
+				if HighlightsTable[player] then
+					pcall(function() HighlightsTable[player]:Destroy() end)
+					HighlightsTable[player] = nil
+				end
 			end
 		end
 	end
-end)
+end))
 
 -- 7. MM2 Role Reveal Button (Y: 304)
 createSimpleToggle(304, Translations.AR.MM2ESPText, Translations.EN.MM2ESPText, function(enabled)
@@ -960,7 +976,8 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer then
 			local char = player.Character
-			if char and char:FindFirstChild("HumanoidRootPart") then
+			local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+			if char and humanoid and humanoid.Health > 0 then
 				local backpack = player:FindFirstChild("Backpack")
 				local hasKnife = false
 				local hasGun = false
@@ -995,7 +1012,7 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 				end
 			else
 				if MM2HighlightsTable[player] then
-					MM2HighlightsTable[player]:Destroy()
+					pcall(function() MM2HighlightsTable[player]:Destroy() end)
 					MM2HighlightsTable[player] = nil
 				end
 			end
@@ -1075,7 +1092,6 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 			if hrp and humanoid and humanoid.Health > 0 then
 				local hitbox = HitboxPartsTable[player]
 				
-				-- إذا لم يكن الـ Hitbox موجوداً، أو تم تدميره بسبب موت اللاعب ورسبونه من جديد، قم بإنشائه فوراً
 				if not hitbox or not hitbox.Parent or hitbox.Parent ~= char then
 					if hitbox then pcall(function() hitbox:Destroy() end) end
 					
@@ -1103,7 +1119,6 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 				hitbox.Size = Vector3.new(HitboxSizeVal, HitboxSizeVal, HitboxSizeVal)
 				hitbox.Color = CurrentThemeColor
 			else
-				-- إذا مات اللاعب، احذف الـ Hitbox الخاص به فوراً ليزول المربع
 				if HitboxPartsTable[player] then
 					pcall(function() HitboxPartsTable[player]:Destroy() end)
 					HitboxPartsTable[player] = nil
@@ -1770,15 +1785,13 @@ FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 780)
 FooterLabelRef.BackgroundTransparency = 0.35
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
-FooterLabelRef.TextSize = 9
-FooterLabelRef.Font = Enum.Font.Gotham
+FooterLabelRef.TextSize, FooterLabelRef.Font = 9, Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
 FooterLabelRef.Parent = MainFrame
 
 -- Keyboard Shortcuts (LeftControl for UI Toggle)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
-	
 	if input.KeyCode == Enum.KeyCode.LeftControl then
 		MainFrame.Visible = not MainFrame.Visible
 	end
