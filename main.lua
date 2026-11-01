@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V4.1 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V4.3 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -60,8 +60,9 @@ local MM2ESPEnabled = false
 local MultiJumpEnabled = false
 local FPSBoostEnabled = false
 
--- متغير حماية زر السكربت الخارجي لمنع التكرار نهائياً
-local MvsExecuted = false
+-- متغير حالة تفعيل وتشغيل السكربت الخارجي (تشغيل / إيقاف وحذف)
+local MvsActive = false
+local MvsLoadedGui = nil
 
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
@@ -116,7 +117,8 @@ local Translations = {
 		MM2ESPText = "Murder Mystery 2 Roles Reveal 🔪",
 		MultiJumpText = "Infinite Air Jump",
 		MvsText = "Murderers VS Sheriffs Hub 🔪",
-		MvsLoaded = "✅ Hub Already Loaded!",
+		MvsStatusON = "✅ MVS Hub: ACTIVE (Click to Stop)",
+		MvsStatusOFF = "❌ MVS Hub: STOPPED (Click to Run)",
 		FPSBoostText = "FPS Boost & Anti-Lag 🚀",
 		TeleportBtn = "Teleport 🚀",
 		TeleportPlaceholder = "Enter Player Name...",
@@ -154,7 +156,7 @@ local Translations = {
 6. 👁️ Player ESP: Highlights all players with flawless auto-respawn sync.
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. ⚔️ Murderers VS Sheriffs Hub: One-time secure loader with anti-spam lock.
+9. ⚔️ Murderers VS Sheriffs Hub: Toggle On/Off system with complete UI cleanup.
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -182,12 +184,13 @@ local Translations = {
 		MM2ESPText = "كشف أدوار MM2 🔪",
 		MultiJumpText = "القفز المتعدد اللانهائي",
 		MvsText = "سكربت Murders vs Sheriffs 🔪",
-		MvsLoaded = "✅ تم تفعيل السكربت مسبقاً!",
+		MvsStatusON = "✅ السكربت شغال (اضغط للإيقاف والحذف)",
+		MvsStatusOFF = "❌ السكربت متوقف (اضغط للتشغيل)",
 		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
 		TeleportBtn = "انتقال 🚀",
 		TeleportPlaceholder = "اكتب اسم اللاعب...",
 		ServerHopBtn = "نظام تبديل السيرفرات",
-		UpdatesBtn = "كل ما يخص السكربت بالتفصيل 📜",
+		UpdatesBtn = "كل ما يخص الاسكربت بالتفصيل 📜",
 		ThemeBtn = "تغيير لون الواجهة 🎨",
 		SavePosBtn = "حفظ المكان الحالي 📍",
 		LoadPosBtn = "الانتقال للمحفوظ 🚀",
@@ -206,27 +209,27 @@ local Translations = {
 		ThemeBlue = "🔵 أزرق سايبر",
 		ThemePurple = "🟣 بنفسجي ملكي",
 		
-		UpdatesTitleText = "📜 دليل ومميزات السكربت الشاملة",
+		UpdatesTitleText = "📜 دليل ومميزات الاسكربت الشاملة والتفصيلية",
 		UpdatesLogText = [[
 ⚡ دليل ومميزات سكربت ادم وياسين VIP الشامل ⚡
 
-📜 قائمة بكل ما يحتوي عليه السكربت منذ إنشائه:
+📜 قائمة بكل ما يحتوي عليه السكربت بعد التعديل وحالياً:
 ---------------------------------------------
-1. 🏃 زيادة السرعة الخارقة: التحكم الكامل في سرعة المشي من (1 إلى 200).
-2. 🦅 الطيران الحر (Flight): طيران احترافي سلس مع التحكم بالسرعة والأبعاد.
-3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
-4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
-5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
-6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي عند الموت والرسبون.
+1. 🏃 سرعة المشي الخارقة: التحكم الكامل في سرعة المشي من (1 إلى 200).
+2. 🦅 الطيران الحر المتقدم: طيران احترافي سلس مع التحكم بالسرعة والأبعاد.
+3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة تامة.
+4. 🏗️ منصة الارتكاز الذكية: إنشاء أرضية نيون تحتك مباشرة (مع تفعيل بحرف F).
+5. ⚡ التفاعل الفوري السريع: فتح الأبواب والكلتشات بدون أي وقت انتظار.
+6. 👁️ كشف اللاعبين عبر الجدران (ESP): إظهار مجسمات جميع اللاعبين مع التحديث التلقائي عند الموت والرسبون.
 7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
-8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. ⚔️ تشغيل سكربت Murderers VS Sheriffs بضغطة واحدة مع نظام حماية تام من التكرار.
-10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
-11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
-12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
-13. 🌐 نظام تبديل السيرفرات (Server Hop): دخول سيرفرات فاضية بنقرة واحدة.
-14. 🎨 مخصص الألوان (Theme Color): خيارات تغيير لون الواجهة (أخضر، أحمر، أزرق، بنفسجي).
-15. 📱💻 دعم جميع الأجهزة: وضع مخصص ومريح للكمبيوتر والموبايل.
+8. 🚀 القفز المتعدد اللانهائي: نط متعدد ومتواصل في الهواء بدون توقف.
+9. ⚔️ تشغيل سكربت Murders vs Sheriffs مع نظام تشغيل وإيقاف وحذف كامل للواجهة والسكربت بنقرة واحدة.
+10. ⚡ مضاد اللاج وسلاسة اللعبة (FPS Boost): إزالة الظلال والتاكتشرز لرفع الفريمات.
+11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع الحالي والعودة إليه فوراُ بزر الانتقال.
+12. 👤 الانتقال المباشر للاعبين: الانتقال السريع لأي لاعب بكتابة اسمه فقط.
+13. 🌐 نظام تبديل السيرفرات (Server Hop): دخول سيرفرات هادئة وفاضية بنقرة واحدة.
+14. 🎨 مخصص الألوان (Theme Color): خيارات متكاملة لتغيير لون الواجهة (أخضر، أحمر، أزرق، بنفسجي).
+15. 📱💻 دعم جميع الأجهزة: وضع مخصص ومريح للكمبيوتر والهاتف.
 16. ⚙️ نظام الصيانة الحية: نظام حماية وإغلاق فوري يدار بواسطة المطور آدم.
 ]],
 		Country = "الموقع: ",
@@ -1035,12 +1038,12 @@ table.insert(Connections, UserInputService.JumpRequest:Connect(function()
 	end
 end))
 
--- 9. Murderers VS Sheriffs Hub Button (Y: 384) [ONE-TIME EXECUTOR BUTTON WITH DEBOUNCE LOCK]
+-- 9. Murderers VS Sheriffs Hub Button (Y: 384) [TOGGLE: ON/OFF WITH FULL CLEANUP]
 MVSButtonRef = Instance.new("TextButton")
 MVSButtonRef.Size = UDim2.new(0.9, 0, 0, 32)
 MVSButtonRef.Position = UDim2.new(0.05, 0, 0, 384)
-MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
-MVSButtonRef.BackgroundTransparency = 0.3
+MVSButtonRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+MVSButtonRef.BackgroundTransparency = 0.35
 MVSButtonRef.TextColor3 = Color3.fromRGB(255, 255, 255)
 MVSButtonRef.TextSize = 10
 MVSButtonRef.Font = Enum.Font.GothamBold
@@ -1051,26 +1054,69 @@ MVSButtonCorner.CornerRadius = UDim.new(0, 6)
 MVSButtonCorner.Parent = MVSButtonRef
 
 updateMvsUI = function()
-	if MvsExecuted then
-		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsLoaded or Translations.EN.MvsLoaded
-		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(60, 120, 80)
+	local lang = Translations[CurrentLang]
+	if MvsActive then
+		MVSButtonRef.Text = (CurrentLang == "AR") and lang.MvsStatusON or Translations.EN.MvsStatusON
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 	else
-		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsText or Translations.EN.MvsText
-		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+		MVSButtonRef.Text = (CurrentLang == "AR") and lang.MvsStatusOFF or Translations.EN.MvsStatusOFF
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
 	end
+	MVSButtonRef.BackgroundTransparency = 0.35
 end
 table.insert(UIUpdaters, updateMvsUI)
 updateMvsUI()
 
 MVSButtonRef.MouseButton1Click:Connect(function()
-	if MvsExecuted then return end -- منع الضغط المتكرر تماماً لو تم تفعيله مسبقاً
-	MvsExecuted = true
+	MvsActive = not MvsActive
+	
+	if MvsActive then
+		pcall(function()
+			for _, gui in pairs(CoreGui:GetChildren()) do
+				if gui:IsA("ScreenGui") and (gui.Name:lower():find("murder") or gui.Name:lower():find("sheriff") or gui.Name:lower():find("duel") or gui.Name:lower():find("hub")) then
+					pcall(function() gui:Destroy() end)
+				end
+			end
+			
+			loadstring(game:HttpGet("https://rawscripts.net/raw/Murderers-VS-Sheriffs-DUELS-Murders-vs-Sheriffs-66524"))()
+			
+			task.delay(0.5, function()
+				for _, gui in pairs(CoreGui:GetChildren()) do
+					if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and (gui.Name:lower():find("murder") or gui.Name:lower():find("sheriff") or gui.Name:lower():find("duel") or gui.Name:lower():find("hub") or #gui:GetChildren() > 0) then
+						MvsLoadedGui = gui
+						break
+					end
+				end
+				if not MvsLoadedGui then
+					for _, gui in pairs(PlayerGui:GetChildren()) do
+						if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and (gui.Name:lower():find("murder") or gui.Name:lower():find("sheriff") or gui.Name:lower():find("duel") or gui.Name:lower():find("hub")) then
+							MvsLoadedGui = gui
+							break
+						end
+					end
+				end
+			end)
+		end)
+	else
+		pcall(function()
+			if MvsLoadedGui and MvsLoadedGui.Parent then
+				MvsLoadedGui:Destroy()
+				MvsLoadedGui = nil
+			end
+			for _, gui in pairs(CoreGui:GetChildren()) do
+				if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and (gui.Name:lower():find("murder") or gui.Name:lower():find("sheriff") or gui.Name:lower():find("duel") or gui.Name:lower():find("hub")) then
+					pcall(function() gui:Destroy() end)
+				end
+			end
+			for _, gui in pairs(PlayerGui:GetChildren()) do
+				if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and (gui.Name:lower():find("murder") or gui.Name:lower():find("sheriff") or gui.Name:lower():find("duel") or gui.Name:lower():find("hub")) then
+					pcall(function() gui:Destroy() end)
+				end
+			end
+		end)
+	end
 	
 	updateMvsUI()
-
-	pcall(function()
-		loadstring(game:HttpGet("https://rawscripts.net/raw/Murderers-VS-Sheriffs-DUELS-Murders-vs-Sheriffs-66524"))()
-	end)
 end)
 
 -- 10. FPS Boost / Anti-Lag Button (Y: 424)
@@ -1634,14 +1680,14 @@ UpdatesScroll.Position = UDim2.new(0.05, 0, 0.13, 0)
 UpdatesScroll.BackgroundTransparency = 1
 UpdatesScroll.BorderSizePixel = 0
 UpdatesScroll.ScrollBarThickness = 5
-UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 650)
+UpdatesScroll.CanvasSize = UDim2.new(0, 0, 0, 680)
 UpdatesScroll.Parent = UpdatesFrame
 
 UpdatesTextLabel = Instance.new("TextLabel")
-UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 640)
+UpdatesTextLabel.Size = UDim2.new(1, -10, 0, 670)
 UpdatesTextLabel.BackgroundTransparency = 1
 UpdatesTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-UpdatesTextLabel.TextSize = 11
+UpdatesTextLabel.TextSize = 12
 UpdatesTextLabel.Font = Enum.Font.GothamBold
 UpdatesTextLabel.TextXAlignment = Enum.TextXAlignment.Left
 UpdatesTextLabel.TextYAlignment = Enum.TextYAlignment.Top
