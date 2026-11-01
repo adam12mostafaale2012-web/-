@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.2 ⚡
+-- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V3.3 ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -11,7 +11,7 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
 -- true  = السكريبت شغال وطبيعي عند الكل
 -- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
-local ScriptEnabled = false  
+local ScriptEnabled = true  
 ---------------------------------------------------------
 
 -- دالة إشعار الصيانة الفورية
@@ -154,7 +154,7 @@ local Translations = {
 6. 👁️ Player ESP: Highlights all players across walls.
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly without freezing player movements (+ / -).
+9. 🎯 ARHANGELS HITBOX: Expand target hitboxes cleanly with auto-respawn sync (+ / -).
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -220,7 +220,7 @@ local Translations = {
 6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران.
 7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
 8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة وبدون تثبيت حركتهم (+ / -).
+9. 🎯 توسيع الهيت بوكس (ARHANGELS HITBOX): تكبير هيت بوكس الأعداء بسلاسة مع تحديث تلقائي عند موت ورسبون اللاعبين (+ / -).
 10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
 11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
 12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
@@ -1022,7 +1022,7 @@ table.insert(Connections, UserInputService.JumpRequest:Connect(function()
 	end
 end))
 
--- 9. ARHANGELS TEAM Button (Y: 384) - [SMART HITBOX SYSTEM]
+-- 9. ARHANGELS TEAM Button (Y: 384) - [SMART AUTO-RESPAWN HITBOX SYSTEM]
 ArhangelsBtnRef = Instance.new("TextButton")
 ArhangelsBtnRef.Size = UDim2.new(0.9, 0, 0, 32)
 ArhangelsBtnRef.Position = UDim2.new(0.05, 0, 0, 384)
@@ -1047,7 +1047,7 @@ end
 table.insert(UIUpdaters, updateArhangelsUI)
 
 local function ClearAllHitboxes()
-	for _, part in pairs(HitboxPartsTable) do
+	for player, part in pairs(HitboxPartsTable) do
 		if part and part.Parent then part:Destroy() end
 	end
 	HitboxPartsTable = {}
@@ -1075,7 +1075,10 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 			if hrp and humanoid and humanoid.Health > 0 then
 				local hitbox = HitboxPartsTable[player]
 				
-				if not hitbox or not hitbox.Parent then
+				-- إذا لم يكن الـ Hitbox موجوداً، أو تم تدميره بسبب موت اللاعب ورسبونه من جديد، قم بإنشائه فوراً
+				if not hitbox or not hitbox.Parent or hitbox.Parent ~= char then
+					if hitbox then pcall(function() hitbox:Destroy() end) end
+					
 					hitbox = Instance.new("Part")
 					hitbox.Name = "Adam_Expanded_Hitbox"
 					hitbox.Shape = Enum.PartType.Block
@@ -1100,8 +1103,9 @@ table.insert(Connections, RunService.RenderStepped:Connect(function()
 				hitbox.Size = Vector3.new(HitboxSizeVal, HitboxSizeVal, HitboxSizeVal)
 				hitbox.Color = CurrentThemeColor
 			else
+				-- إذا مات اللاعب، احذف الـ Hitbox الخاص به فوراً ليزول المربع
 				if HitboxPartsTable[player] then
-					HitboxPartsTable[player]:Destroy()
+					pcall(function() HitboxPartsTable[player]:Destroy() end)
 					HitboxPartsTable[player] = nil
 				end
 			end
@@ -1763,7 +1767,7 @@ end)
 FooterLabelRef = Instance.new("TextLabel")
 FooterLabelRef.Size = UDim2.new(0.9, 0, 0, 24)
 FooterLabelRef.Position = UDim2.new(0.05, 0, 0, 780)
-FooterLabelRef.BackgroundTransparency = 1
+FooterLabelRef.BackgroundTransparency = 0.35
 FooterLabelRef.Text = Translations[CurrentLang].Footer
 FooterLabelRef.TextColor3 = Color3.fromRGB(130, 140, 160)
 FooterLabelRef.TextSize = 9
