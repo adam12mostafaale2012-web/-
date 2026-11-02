@@ -1,5 +1,5 @@
 -- ========================================================
--- ⚡ ADAM & YASEEN CONTROLLER - ULTIMATE CORE V4.1 ⚡
+-- ⚡ سكربت المهندس أدم وياسين - النسخة النهائية المعربة ⚡
 -- ========================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -9,12 +9,9 @@ local Terrain = Workspace:FindFirstChildOfClass("Terrain")
 
 ---------------------------------------------------------
 -- ⚙️ لوحة التحكم الرئيسية للصيانة:
--- true  = السكريبت شغال وطبيعي عند الكل
--- false = السكريبت مقفول صيانة (يمنع التشغيل ويحذف الواجهات)
 local ScriptEnabled = true  
 ---------------------------------------------------------
 
--- دالة إشعار الصيانة الفورية
 local function showMaintenanceNotice()
 	pcall(function()
 		StarterGui:SetCore("SendNotification", {
@@ -25,7 +22,6 @@ local function showMaintenanceNotice()
 	end)
 end
 
--- فحص حالة الصيانة فوراً قبل تحميل أي حاجة
 if ScriptEnabled == false then
 	showMaintenanceNotice()
 	for _, gui in pairs(CoreGui:GetChildren()) do
@@ -48,7 +44,6 @@ local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Global States & Variables (الافتراضي عربي فوراً من أول فتح)
 local CurrentLang = "AR"
 local SpeedEnabled = false
 local NoclipEnabled = false
@@ -60,16 +55,13 @@ local MM2ESPEnabled = false
 local MultiJumpEnabled = false
 local FPSBoostEnabled = false
 
--- متغير حماية زر السكربت الخارجي لمنع التكرار نهائياً
-local MvsExecuted = false
+local MvsActiveState = false
+local MvsLoadedInstance = nil
 
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
 
--- Theme Palette State (Default: Green/Cyan)
 local CurrentThemeColor = Color3.fromRGB(0, 255, 180)
-
--- Waypoint Save Variable
 local SavedPosition = nil
 
 local FollowPlatformPart = nil
@@ -79,11 +71,9 @@ local Connections = {}
 local HighlightsTable = {}
 local MM2HighlightsTable = {}
 
--- Server Hop Variables
 local AutoHopEnabled = false
 local HopThreshold = 1
 
--- Country Name Translation Dictionary
 local CountryNamesAR = {
 	["EG"] = "مصر", ["SA"] = "المملكة العربية السعودية", ["AE"] = "الإمارات العربية المتحدة",
 	["KW"] = "الكويت", ["QA"] = "قطر", ["BH"] = "البحرين", ["OM"] = "سلطنة عمان",
@@ -93,7 +83,6 @@ local CountryNamesAR = {
 	["GB"] = "المملكة المتحدة", ["FR"] = "فرنسا", ["DE"] = "ألمانيا", ["TR"] = "تركيا"
 }
 
--- UI References
 local TitleLabel, LangBtnRef, SpeedBtnRef, FlyBtnRef, PlatformBtnRef
 local TeleportBtnRef, TeleportInputRef, ServerHopPanelBtnRef, UpdatesPanelBtnRef, ThemePanelBtnRef
 local SavePosBtnRef, LoadPosBtnRef
@@ -103,8 +92,71 @@ local ServerHopFrame, ServerHopCloseBtn, ServerHopInfoLabel, ServerHopInput, Hop
 local UpdatesFrame, UpdatesCloseBtn, UpdatesTitle, UpdatesTextLabel, UpdatesScroll
 local ThemeFrame, ThemeCloseBtn, ThemeTitleText, ThemeGreenBtn, ThemeRedBtn, ThemeBlueBtn, ThemePurpleBtn
 
--- Translations Setup (Comprehensive Translation)
 local Translations = {
+	AR = {
+		Title = "⚡ سكربت المهندس أدم وياسين ⚡",
+		SpeedText = "سرعة المشي الخارقة",
+		FlyText = "الطيران الحر المتقدم",
+		NoclipText = "اختراق الجدران (Noclip)",
+		PlatformText = "منصة الارتكاز الذكية",
+		InstantInteractText = "التفاعل الفوري السريع",
+		ESPText = "كشف اللاعبين عبر الجدران",
+		MM2ESPText = "كشف أدوار MM2 🔪",
+		MultiJumpText = "القفز المتعدد اللانهائي",
+		MvsTextActive = "فريق: تفعيل",
+		MvsTextClosed = "فريق: غلق",
+		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
+		TeleportBtn = "انتقال 🚀",
+		TeleportPlaceholder = "اكتب اسم اللاعب...",
+		ServerHopBtn = "نظام تبديل السيرفرات",
+		UpdatesBtn = "كل ما يخص السكربت بالتفصيل 📜",
+		ThemeBtn = "تغيير لون الواجهة 🎨",
+		SavePosBtn = "حفظ المكان الحالي 📍",
+		LoadPosBtn = "الانتقال للمحفوظ 🚀",
+		
+		ThemeTitle = "🎨 اختر لون الواجهة المفضل",
+		ThemeGreen = "🟢 أخضر نيون",
+		ThemeRed = "🔴 أحمر ناري",
+		ThemeBlue = "🔵 أزرق سايبر",
+		ThemePurple = "🟣 بنفسجي ملكي",
+		
+		ServerHopInfo = "الانتقال لسيرفرات هادئة وفارغة لسهولة اللعب وتجنب اللاج.",
+		HopThresholdPlaceholder = "أقصى عدد لاعبين (مثال: 1-5)",
+		HopOnceText = "انتقال لسيرفر الآن 🌐",
+		AutoHopON = "التنقل التلقائي: تفعيل",
+		AutoHopOFF = "التنقل التلقائي: غلق",
+		
+		UpdatesTitleText = "📜 دليل ومميزات السكربت الشاملة",
+		UpdatesLogText = [[
+⚡ دليل ومميزات سكربت المهندس أدم وياسين VIP الشامل ⚡
+
+📜 قائمة بكل ما يحتوي عليه السكربت منذ إنشائه:
+---------------------------------------------
+1. 🏃 زيادة السرعة الخارقة: التحكم الكامل في سرعة المشي من (1 إلى 200).
+2. 🦅 الطيران الحر (Flight): طيران احترافي سلس مع التحكم بالسرعة والأبعاد.
+3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
+4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
+5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
+6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي عند الموت والرسبون.
+7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
+8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
+9. ⚔️ فريق: نظام تفعيل وغلق تفاعلي بضغطة زر مع تنظيف كامل للذاكرة.
+10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
+11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
+12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
+13. 🌐 نظام تبديل السيرفرات (Server Hop): دخول سيرفرات فاضية بنقرة واحدة.
+14. 🎨 مخصص الألوان (Theme Color): خيارات تغيير لون الواجهة (أخضر، أحمر، أزرق، بنفسجي).
+15. 📱💻 دعم جميع الأجهزة: وضع مخصص ومريح للكمبيوتر والموبايل.
+16. ⚙️ نظام الصيانة الحية: نظام حماية وإغلاق فوري يدار بواسطة المهندس أدم.
+]],
+		Country = "الموقع: ",
+		CountryLoading = "الموقع: جاري التحميل...",
+		CountryUnknown = "الموقع: غير متوفر",
+		Footer = "Left Ctrl: إخفاء / إظهار الواجهة",
+		ON = "ON",
+		OFF = "OFF",
+		LangBtn = "EN"
+	},
 	EN = {
 		Title = "⚡ ADAM & YASEEN CONTROLLER ⚡",
 		SpeedText = "Walk Speed Boost",
@@ -115,8 +167,8 @@ local Translations = {
 		ESPText = "Player Wallhack ESP",
 		MM2ESPText = "Murder Mystery 2 Roles Reveal 🔪",
 		MultiJumpText = "Infinite Air Jump",
-		MvsText = "Murderers VS Sheriffs Hub 🔪",
-		MvsLoaded = "✅ Hub Already Loaded!",
+		MvsTextActive = "Team: ON",
+		MvsTextClosed = "Team: OFF",
 		FPSBoostText = "FPS Boost & Anti-Lag 🚀",
 		TeleportBtn = "Teleport 🚀",
 		TeleportPlaceholder = "Enter Player Name...",
@@ -126,19 +178,17 @@ local Translations = {
 		SavePosBtn = "Save Location 📍",
 		LoadPosBtn = "Teleport Saved 🚀",
 		
-		-- Server Hop Sub-panel
-		ServerHopInfo = "Server Hop & Region Switcher\nFind smaller or cleaner servers.",
-		HopThresholdPlaceholder = "Max Players Threshold...",
-		HopOnceText = "Hop Once",
-		AutoHopON = "Auto Hop: ON",
-		AutoHopOFF = "Auto Hop: OFF",
-		
-		-- Theme Sub-panel
 		ThemeTitle = "🎨 Choose Interface Color Theme",
 		ThemeGreen = "🟢 Neon Green",
 		ThemeRed = "🔴 Crimson Red",
 		ThemeBlue = "🔵 Cyber Blue",
 		ThemePurple = "🟣 Royal Purple",
+		
+		ServerHopInfo = "Switch to low population servers or filter by player count easily.",
+		HopThresholdPlaceholder = "Max players (e.g. 1-5)",
+		HopOnceText = "Hop Server Now 🌐",
+		AutoHopON = "Auto Hop: ON",
+		AutoHopOFF = "Auto Hop: OFF",
 		
 		UpdatesTitleText = "📜 Complete Script Features & History",
 		UpdatesLogText = [[
@@ -154,7 +204,7 @@ local Translations = {
 6. 👁️ Player ESP: Highlights all players with flawless auto-respawn sync.
 7. 🔪 MM2 Role Reveal: Identifies Murderers (Red), Sheriffs (Blue), and Innocents (Yellow).
 8. 🚀 Infinite Multi-Jump: Infinite airborne jumping capability.
-9. ⚔️ Murderers VS Sheriffs Hub: One-time secure loader with anti-spam lock.
+9. ⚔️ Team Hub: Interactive toggle script system with clean memory wipe.
 10. ⚡ FPS Boost / Anti-Lag: Removes lag, shadows, and textures for ultra smoothness.
 11. 📍 Waypoint Teleport: Save position and teleport via buttons.
 12. 👤 Player Teleport: Teleport directly to any player by entering their name.
@@ -170,76 +220,9 @@ local Translations = {
 		ON = "ON",
 		OFF = "OFF",
 		LangBtn = "AR"
-	},
-	AR = {
-		Title = "⚡ سكربت ادم وياسين ⚡",
-		SpeedText = "سرعة المشي الخارقة",
-		FlyText = "الطيران الحر المتقدم",
-		NoclipText = "اختراق الجدران (Noclip)",
-		PlatformText = "منصة الارتكاز الذكية",
-		InstantInteractText = "التفاعل الفوري السريع",
-		ESPText = "كشف اللاعبين عبر الجدران",
-		MM2ESPText = "كشف أدوار MM2 🔪",
-		MultiJumpText = "القفز المتعدد اللانهائي",
-		MvsText = "سكربت Murders vs Sheriffs 🔪",
-		MvsLoaded = "✅ تم تفعيل السكربت مسبقاً!",
-		FPSBoostText = "مضاد اللاج وسلاسة اللعبة 🚀",
-		TeleportBtn = "انتقال 🚀",
-		TeleportPlaceholder = "اكتب اسم اللاعب...",
-		ServerHopBtn = "نظام تبديل السيرفرات",
-		UpdatesBtn = "كل ما يخص السكربت بالتفصيل 📜",
-		ThemeBtn = "تغيير لون الواجهة 🎨",
-		SavePosBtn = "حفظ المكان الحالي 📍",
-		LoadPosBtn = "الانتقال للمحفوظ 🚀",
-		
-		-- Server Hop Sub-panel
-		ServerHopInfo = "نظام التبديل والانتقال الذكي للسيرفرات\nللبحث عن سيرفرات هادئة وبدون لاج.",
-		HopThresholdPlaceholder = "الحد الأقصى للاعبين بالسيرفر...",
-		HopOnceText = "تبديل الآن",
-		AutoHopON = "تبديل تلقائي: شغال",
-		AutoHopOFF = "تبديل تلقائي: مقفول",
-		
-		-- Theme Sub-panel
-		ThemeTitle = "🎨 اختر لون الواجهة المفضل",
-		ThemeGreen = "🟢 أخضر نيون",
-		ThemeRed = "🔴 أحمر ناري",
-		ThemeBlue = "🔵 أزرق سايبر",
-		ThemePurple = "🟣 بنفسجي ملكي",
-		
-		UpdatesTitleText = "📜 دليل ومميزات السكربت الشاملة",
-		UpdatesLogText = [[
-⚡ دليل ومميزات سكربت ادم وياسين VIP الشامل ⚡
-
-📜 قائمة بكل ما يحتوي عليه السكربت منذ إنشائه:
----------------------------------------------
-1. 🏃 زيادة السرعة الخارقة: التحكم الكامل في سرعة المشي من (1 إلى 200).
-2. 🦅 الطيران الحر (Flight): طيران احترافي سلس مع التحكم بالسرعة والأبعاد.
-3. 👻 اختراق الجدران (Noclip): المرور من خلال المباني والألواح بسهولة.
-4. 🏗️ منصة الارتكاز (Quantum Platform): إنشاء أرضية نيون تحتك (تفعيل بحرف F).
-5. ⚡ التفاعل الفوري (Instant Interact): فتح الأبواب والكلتشات بدون انتظار.
-6. 👁️ كشف الأماكن (ESP): إظهار مجسمات جميع اللاعبين خلف الجدران مع التحديث التلقائي عند الموت والرسبون.
-7. 🔪 كشف أدوار Murder Mystery 2: تحديد القاتل (أحمر)، الشريف (أزرق)، البريء (أصفر).
-8. 🚀 القفز المتعدد اللانهائي: نط متعدد في الهواء بدون توقف.
-9. ⚔️ تشغيل سكربت Murderers VS Sheriffs بضغطة واحدة مع نظام حماية تام من التكرار.
-10. ⚡ مضاد اللاج (FPS Boost): إزالة الظلال والتاكتشرز لرفع السلاسة والفريمات.
-11. 📍 حفظ وإعادة الانتقال (Waypoint): حفظ الموقع والعودة إليه بزر الانتقال.
-12. 👤 الانتقال للاعبين: الانتقال المباشر لأي لاعب بكتابة اسمه فقط.
-13. 🌐 نظام تبديل السيرفرات (Server Hop): دخول سيرفرات فاضية بنقرة واحدة.
-14. 🎨 مخصص الألوان (Theme Color): خيارات تغيير لون الواجهة (أخضر، أحمر، أزرق، بنفسجي).
-15. 📱💻 دعم جميع الأجهزة: وضع مخصص ومريح للكمبيوتر والموبايل.
-16. ⚙️ نظام الصيانة الحية: نظام حماية وإغلاق فوري يدار بواسطة المطور آدم.
-]],
-		Country = "الموقع: ",
-		CountryLoading = "الموقع: جاري التحميل...",
-		CountryUnknown = "الموقع: غير متوفر",
-		Footer = "Left Ctrl: إخفاء / إظهار الواجهة",
-		ON = "ON",
-		OFF = "OFF",
-		LangBtn = "EN"
 	}
 }
 
--- Startup Sound Effect
 task.spawn(function()
 	pcall(function()
 		local startupSound = Instance.new("Sound")
@@ -256,7 +239,6 @@ task.spawn(function()
 	end)
 end)
 
--- منع التكرار: حذف أي واجهة قديمة فوراً لو كانت موجودة قبل تشغيل الجديدة
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 for _, gui in pairs(PlayerGui:GetChildren()) do
 	if gui.Name == "Legendary_Core_UI" then
@@ -269,9 +251,6 @@ ScreenGui.Name = "Legendary_Core_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
----------------------------------------------------------
--- 📱💻 نافذة اختيار الجهاز أولاً
----------------------------------------------------------
 local SelectorGui = Instance.new("Frame")
 SelectorGui.Size = UDim2.new(0, 320, 0, 190)
 SelectorGui.Position = UDim2.new(0.5, -160, 0.5, -95)
@@ -286,7 +265,7 @@ SelectorCorner.CornerRadius = UDim.new(0, 14)
 SelectorCorner.Parent = SelectorGui
 
 local SelectorStroke = Instance.new("UIStroke")
-SelectorStroke.Thickness = 2
+SelectorStroke.Thickness = 2.5
 SelectorStroke.Color = CurrentThemeColor
 SelectorStroke.Parent = SelectorGui
 
@@ -327,9 +306,6 @@ local MobileCorner = Instance.new("UICorner")
 MobileCorner.CornerRadius = UDim.new(0, 8)
 MobileCorner.Parent = MobileBtn
 
----------------------------------------------------------
--- إعداد اللوحة الرئيسية
----------------------------------------------------------
 local BaseWidth, BaseHeight = 310, 970
 
 local MainFrame = Instance.new("Frame")
@@ -348,7 +324,7 @@ MainCorner.CornerRadius = UDim.new(0, 14)
 MainCorner.Parent = MainFrame
 
 local MainStroke = Instance.new("UIStroke")
-MainStroke.Thickness = 2
+MainStroke.Thickness = 2.5
 MainStroke.Color = CurrentThemeColor
 MainStroke.Parent = MainFrame
 
@@ -360,9 +336,6 @@ GradientStroke.Color = ColorSequence.new({
 })
 GradientStroke.Parent = MainStroke
 
----------------------------------------------------------
--- زر ADAM العائم
----------------------------------------------------------
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Name = "Legendary_ToggleBtn"
 ToggleBtn.Size = UDim2.new(0, 140, 0, 45)
@@ -410,15 +383,16 @@ ToggleBtn.MouseButton1Click:Connect(function()
 	MainFrame.Visible = not MainFrame.Visible
 end)
 
----------------------------------------------------------
--- تطبيق لون الثيم الجديد عالمياً على جميع العناصر
----------------------------------------------------------
+local UpdatesFrameStroke, HopFrameStroke, ThemeFrameStroke
+
 local function ApplyThemeColor(color)
 	CurrentThemeColor = color
 	MainStroke.Color = color
 	ToggleStroke.Color = color
 	if SelectorStroke then SelectorStroke.Color = color end
 	if UpdatesFrameStroke then UpdatesFrameStroke.Color = color end
+	if HopFrameStroke then HopFrameStroke.Color = color end
+	if ThemeFrameStroke then ThemeFrameStroke.Color = color end
 	if TitleLabel then TitleLabel.TextColor3 = color end
 	if UpdatesTitle then UpdatesTitle.TextColor3 = color end
 	if ThemeTitleText then ThemeTitleText.TextColor3 = color end
@@ -430,9 +404,6 @@ local function ApplyThemeColor(color)
 	})
 end
 
----------------------------------------------------------
--- الأحداث بعد اختيار نوع الجهاز
----------------------------------------------------------
 PCBtn.MouseButton1Click:Connect(function()
 	SelectorGui:Destroy()
 	BaseWidth, BaseHeight = 310, 970
@@ -449,7 +420,6 @@ MobileBtn.MouseButton1Click:Connect(function()
 	ToggleBtn.Visible = true
 end)
 
--- Title Header Frame
 local TitleFrame = Instance.new("Frame")
 TitleFrame.Size = UDim2.new(1, 0, 0, 54)
 TitleFrame.BackgroundColor3 = Color3.fromRGB(16, 20, 30)
@@ -472,7 +442,6 @@ TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = TitleFrame
 
--- Language Switcher Button
 LangBtnRef = Instance.new("TextButton")
 LangBtnRef.Size = UDim2.new(0, 44, 0, 28)
 LangBtnRef.Position = UDim2.new(0.63, 0, 0.24, 0)
@@ -488,7 +457,6 @@ local LangCorner = Instance.new("UICorner")
 LangCorner.CornerRadius = UDim.new(0, 6)
 LangCorner.Parent = LangBtnRef
 
--- Close Button
 local CloseUIBtn = Instance.new("TextButton")
 CloseUIBtn.Size = UDim2.new(0, 28, 0, 28)
 CloseUIBtn.Position = UDim2.new(0.83, 0, 0.24, 0)
@@ -515,6 +483,7 @@ local function CleanScript()
 	MultiJumpEnabled = false
 	AutoHopEnabled = false
 	FPSBoostEnabled = false
+	MvsActiveState = false
 	
 	pcall(function()
 		Lighting.GlobalShadows = true
@@ -532,6 +501,25 @@ local function CleanScript()
 
 	for _, highlight in pairs(MM2HighlightsTable) do if highlight then highlight:Destroy() end end
 	MM2HighlightsTable = {}
+
+	if MvsLoadedInstance then
+		pcall(function()
+			if typeof(MvsLoadedInstance) == "Instance" then
+				MvsLoadedInstance:Destroy()
+			elseif type(MvsLoadedInstance) == "table" and MvsLoadedInstance.Destroy then
+				MvsLoadedInstance:Destroy()
+			end
+		end)
+		MvsLoadedInstance = nil
+	end
+
+	pcall(function()
+		for _, gui in pairs(CoreGui:GetChildren()) do
+			if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and not gui.Name:find("Roblox") then
+				gui:Destroy()
+			end
+		end
+	end)
 
 	local char = LocalPlayer.Character
 	if char then
@@ -553,7 +541,6 @@ end
 
 CloseUIBtn.MouseButton1Click:Connect(CleanScript)
 
--- حلقة مراقبة صيانة داخلية
 task.spawn(function()
 	while task.wait(3) do
 		if ScriptEnabled == false then
@@ -566,6 +553,38 @@ end)
 
 local UIUpdaters = {}
 local updateSpeedUI, updateFlyUI, updateMvsUI, updateFPSBoostUI
+
+-- دالة التعريب التلقائي لاسم الواجهة الخارجية وجعله "فريق" فقط دون كلمات غريبة
+local function translateTeamUI()
+	pcall(function()
+		for _, gui in pairs(CoreGui:GetChildren()) do
+			if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and not gui.Name:find("Roblox") then
+				for _, desc in ipairs(gui:GetDescendants()) do
+					if desc:IsA("TextLabel") or desc:IsA("TextButton") then
+						local txt = desc.Text
+						if CurrentLang == "AR" then
+							if txt:upper():find("ARHANGELS TEAM") or txt:upper():find("TEAM") or txt:upper():find("HUB") then
+								desc.Text = "فريق"
+							elseif txt:upper() == "OFF" then
+								desc.Text = "إغلاق"
+							elseif txt:upper() == "ON" then
+								desc.Text = "تفعيل"
+							end
+						else
+							if txt == "فريق" then
+								desc.Text = "TEAM"
+							elseif txt == "إغلاق" then
+								desc.Text = "OFF"
+							elseif txt == "تفعيل" then
+								desc.Text = "ON"
+							end
+						end
+					end
+				end
+			end
+		end
+	end)
+end
 
 LangBtnRef.MouseButton1Click:Connect(function()
 	CurrentLang = (CurrentLang == "AR") and "EN" or "AR"
@@ -599,11 +618,10 @@ LangBtnRef.MouseButton1Click:Connect(function()
 	for _, updater in ipairs(UIUpdaters) do
 		pcall(updater)
 	end
+	
+	translateTeamUI()
 end)
 
----------------------------------------------------------
--- UI CONTROLS
----------------------------------------------------------
 local function createSimpleToggle(posY, textKeyAR, textKeyEN, onClick)
 	local button = Instance.new("TextButton")
 	button.Size = UDim2.new(0.9, 0, 0, 32)
@@ -917,7 +935,7 @@ table.insert(Connections, ProximityPromptService.PromptShown:Connect(function(pr
 	if InstantInteractEnabled then prompt.HoldDuration = 0 end
 end))
 
--- 6. Player ESP Button (Y: 264) - [SMART AUTO-RESPAWN ESP SYSTEM]
+-- 6. Player ESP Button (Y: 264)
 createSimpleToggle(264, Translations.AR.ESPText, Translations.EN.ESPText, function(enabled)
 	ESPEnabled = enabled
 	if not ESPEnabled then
@@ -1035,12 +1053,12 @@ table.insert(Connections, UserInputService.JumpRequest:Connect(function()
 	end
 end))
 
--- 9. Murderers VS Sheriffs Hub Button (Y: 384) [ONE-TIME EXECUTOR BUTTON WITH DEBOUNCE LOCK]
+-- 9. زر "فريق" التفاعلي (Y: 384)
 MVSButtonRef = Instance.new("TextButton")
 MVSButtonRef.Size = UDim2.new(0.9, 0, 0, 32)
 MVSButtonRef.Position = UDim2.new(0.05, 0, 0, 384)
-MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
-MVSButtonRef.BackgroundTransparency = 0.3
+MVSButtonRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
+MVSButtonRef.BackgroundTransparency = 0.35
 MVSButtonRef.TextColor3 = Color3.fromRGB(255, 255, 255)
 MVSButtonRef.TextSize = 10
 MVSButtonRef.Font = Enum.Font.GothamBold
@@ -1051,26 +1069,49 @@ MVSButtonCorner.CornerRadius = UDim.new(0, 6)
 MVSButtonCorner.Parent = MVSButtonRef
 
 updateMvsUI = function()
-	if MvsExecuted then
-		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsLoaded or Translations.EN.MvsLoaded
-		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(60, 120, 80)
+	if MvsActiveState then
+		MVSButtonRef.Text = Translations[CurrentLang].MvsTextActive
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 180, 110)
 	else
-		MVSButtonRef.Text = (CurrentLang == "AR") and Translations.AR.MvsText or Translations.EN.MvsText
-		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+		MVSButtonRef.Text = Translations[CurrentLang].MvsTextClosed
+		MVSButtonRef.BackgroundColor3 = Color3.fromRGB(180, 45, 45)
 	end
+	MVSButtonRef.BackgroundTransparency = 0.35
 end
 table.insert(UIUpdaters, updateMvsUI)
 updateMvsUI()
 
 MVSButtonRef.MouseButton1Click:Connect(function()
-	if MvsExecuted then return end -- منع الضغط المتكرر تماماً لو تم تفعيله مسبقاً
-	MvsExecuted = true
-	
+	MvsActiveState = not MvsActiveState
 	updateMvsUI()
-
-	pcall(function()
-		loadstring(game:HttpGet("https://rawscripts.net/raw/Murderers-VS-Sheriffs-DUELS-Murders-vs-Sheriffs-66524"))()
-	end)
+	
+	if MvsActiveState then
+		pcall(function()
+			MvsLoadedInstance = loadstring(game:HttpGet("https://rawscripts.net/raw/Murderers-VS-Sheriffs-DUELS-Murders-vs-Sheriffs-66524"))()
+		end)
+		task.delay(1, function()
+			translateTeamUI()
+		end)
+	else
+		if MvsLoadedInstance then
+			pcall(function()
+				if typeof(MvsLoadedInstance) == "Instance" then
+					MvsLoadedInstance:Destroy()
+				elseif type(MvsLoadedInstance) == "table" and MvsLoadedInstance.Destroy then
+					MvsLoadedInstance:Destroy()
+				end
+			end)
+			MvsLoadedInstance = nil
+		end
+		
+		pcall(function()
+			for _, gui in pairs(CoreGui:GetChildren()) do
+				if gui:IsA("ScreenGui") and gui.Name ~= "Legendary_Core_UI" and not gui.Name:find("Roblox") then
+					gui:Destroy()
+				end
+			end
+		end)
+	end
 end)
 
 -- 10. FPS Boost / Anti-Lag Button (Y: 424)
@@ -1157,7 +1198,6 @@ table.insert(UIUpdaters, function()
 	HitboxSpacerLabel.Text = (CurrentLang == "AR") and "⚡ سكربتات وتحكم متقدم ⚡" or "⚡ Advanced Controls & Tools ⚡"
 end)
 
--- دالة الانتقال للمكان المحفوظ
 local function TeleportToSavedWaypoint()
 	if SavedPosition then
 		local char = LocalPlayer.Character
@@ -1288,7 +1328,6 @@ local ServerHopCorner = Instance.new("UICorner")
 ServerHopCorner.CornerRadius = UDim.new(0, 6)
 ServerHopCorner.Parent = ServerHopPanelBtnRef
 
--- Server Hop Panel Frame
 ServerHopFrame = Instance.new("Frame")
 ServerHopFrame.Size = UDim2.new(0, 280, 0, 220)
 ServerHopFrame.Position = UDim2.new(1.05, 0, 0, 0)
@@ -1299,12 +1338,12 @@ ServerHopFrame.Visible = false
 ServerHopFrame.Parent = MainFrame
 
 local HopFrameCorner = Instance.new("UICorner")
-HopFrameCorner.CornerRadius = UDim.new(0, 12)
+HopFrameCorner.CornerRadius = UDim.new(0, 14)
 HopFrameCorner.Parent = ServerHopFrame
 
-local HopFrameStroke = Instance.new("UIStroke")
-HopFrameStroke.Thickness = 2
-HopFrameStroke.Color = Color3.fromRGB(100, 100, 255)
+HopFrameStroke = Instance.new("UIStroke")
+HopFrameStroke.Thickness = 2.5
+HopFrameStroke.Color = CurrentThemeColor
 HopFrameStroke.Parent = ServerHopFrame
 
 ServerHopCloseBtn = Instance.new("TextButton")
@@ -1447,7 +1486,6 @@ local ThemeCorner = Instance.new("UICorner")
 ThemeCorner.CornerRadius = UDim.new(0, 6)
 ThemeCorner.Parent = ThemePanelBtnRef
 
--- Theme Selection Panel Frame
 ThemeFrame = Instance.new("Frame")
 ThemeFrame.Size = UDim2.new(0, 280, 0, 200)
 ThemeFrame.Position = UDim2.new(1.05, 0, 0, 0)
@@ -1458,11 +1496,11 @@ ThemeFrame.Visible = false
 ThemeFrame.Parent = MainFrame
 
 local ThemeFrameCorner = Instance.new("UICorner")
-ThemeFrameCorner.CornerRadius = UDim.new(0, 12)
+ThemeFrameCorner.CornerRadius = UDim.new(0, 14)
 ThemeFrameCorner.Parent = ThemeFrame
 
-local ThemeFrameStroke = Instance.new("UIStroke")
-ThemeFrameStroke.Thickness = 2
+ThemeFrameStroke = Instance.new("UIStroke")
+ThemeFrameStroke.Thickness = 2.5
 ThemeFrameStroke.Color = CurrentThemeColor
 ThemeFrameStroke.Parent = ThemeFrame
 
@@ -1492,7 +1530,6 @@ ThemeTitleText.Font = Enum.Font.GothamBold
 ThemeTitleText.TextXAlignment = Enum.TextXAlignment.Left
 ThemeTitleText.Parent = ThemeFrame
 
--- Green Theme Button
 ThemeGreenBtn = Instance.new("TextButton")
 ThemeGreenBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeGreenBtn.Position = UDim2.new(0.05, 0, 0.28, 0)
@@ -1507,7 +1544,6 @@ local GreenCorner = Instance.new("UICorner")
 GreenCorner.CornerRadius = UDim.new(0, 8)
 GreenCorner.Parent = ThemeGreenBtn
 
--- Red Theme Button
 ThemeRedBtn = Instance.new("TextButton")
 ThemeRedBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeRedBtn.Position = UDim2.new(0.53, 0, 0.28, 0)
@@ -1522,7 +1558,6 @@ local RedCorner = Instance.new("UICorner")
 RedCorner.CornerRadius = UDim.new(0, 8)
 RedCorner.Parent = ThemeRedBtn
 
--- Blue Theme Button
 ThemeBlueBtn = Instance.new("TextButton")
 ThemeBlueBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemeBlueBtn.Position = UDim2.new(0.05, 0, 0.58, 0)
@@ -1537,7 +1572,6 @@ local BlueCorner = Instance.new("UICorner")
 BlueCorner.CornerRadius = UDim.new(0, 8)
 BlueCorner.Parent = ThemeBlueBtn
 
--- Purple Theme Button
 ThemePurpleBtn = Instance.new("TextButton")
 ThemePurpleBtn.Size = UDim2.new(0.42, 0, 0, 36)
 ThemePurpleBtn.Position = UDim2.new(0.53, 0, 0.58, 0)
@@ -1583,7 +1617,6 @@ local UpdatesCorner = Instance.new("UICorner")
 UpdatesCorner.CornerRadius = UDim.new(0, 6)
 UpdatesCorner.Parent = UpdatesPanelBtnRef
 
--- Updates Window / Frame
 UpdatesFrame = Instance.new("Frame")
 UpdatesFrame.Size = UDim2.new(0, 310, 0, 340)
 UpdatesFrame.Position = UDim2.new(1.05, 0, 0, 0)
@@ -1594,11 +1627,11 @@ UpdatesFrame.Visible = false
 UpdatesFrame.Parent = MainFrame
 
 local UpdatesFrameCorner = Instance.new("UICorner")
-UpdatesFrameCorner.CornerRadius = UDim.new(0, 12)
+UpdatesFrameCorner.CornerRadius = UDim.new(0, 14)
 UpdatesFrameCorner.Parent = UpdatesFrame
 
 UpdatesFrameStroke = Instance.new("UIStroke")
-UpdatesFrameStroke.Thickness = 2
+UpdatesFrameStroke.Thickness = 2.5
 UpdatesFrameStroke.Color = CurrentThemeColor
 UpdatesFrameStroke.Parent = UpdatesFrame
 
@@ -1699,10 +1732,8 @@ FooterLabelRef.Font = Enum.Font.Gotham
 FooterLabelRef.TextXAlignment = Enum.TextXAlignment.Center
 FooterLabelRef.Parent = MainFrame
 
--- Keyboard Shortcuts (LeftControl for UI Toggle)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
-	
 	if input.KeyCode == Enum.KeyCode.LeftControl then
 		MainFrame.Visible = not MainFrame.Visible
 	end
