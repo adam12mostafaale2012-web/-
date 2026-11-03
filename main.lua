@@ -59,7 +59,7 @@ local MvsActiveState = false
 local MvsLoadedInstance = nil
 
 -- حالة زر "ماب سرقت البيض" (السكربت الثالث المدمج في آخر الملف)
-local EggsMap = { Active = false, Loaded = nil, Before = {}, Source = "" }
+local EggsMap = { Active = false, Loaded = nil, Before = {}, Source = "", Run = 0 }
 
 local WalkSpeedVal = 50
 local FlySpeedVal = 50
@@ -497,6 +497,41 @@ local function EggsMapSnapshot()
 		end
 	end
 	return set
+end
+
+-- استبدال الأسماء داخل واجهة ماب سرقت البيض (cebo hit / ceboscripts -> ادم وياسين)
+local EggsMapNamePatterns = {
+	"[cC][eE][bB][oO]%s*[hH][iI][tT]",
+	"[cC][eE][bB][oO]%s*[sS][cC][rR][iI][pP][tT][sS]",
+}
+
+local function EggsMapRebrandText(text)
+	for _, p in ipairs(EggsMapNamePatterns) do
+		text = text:gsub(p, "ادم وياسين")
+	end
+	return text
+end
+
+local function EggsMapRebrandSweep()
+	for _, container in ipairs(EggsMapContainers()) do
+		if container then
+			for _, child in ipairs(container:GetChildren()) do
+				if not EggsMap.Before[child] and child ~= ScreenGui then
+					pcall(function()
+						local objs = child:GetDescendants()
+						table.insert(objs, child)
+						for _, d in ipairs(objs) do
+							if d:IsA("TextLabel") or d:IsA("TextButton") then
+								local t = d.Text
+								local n = EggsMapRebrandText(t)
+								if n ~= t then d.Text = n end
+							end
+						end
+					end)
+				end
+			end
+		end
+	end
 end
 
 EggsMap.Stop = function()
@@ -1780,6 +1815,16 @@ do
 			EggsMap.Active = true
 			updateEggsMapUI()
 			EggsMap.Before = EggsMapSnapshot()
+
+			-- مراقبة الواجهة وتغيير الأسماء أول بأول
+			EggsMap.Run = EggsMap.Run + 1
+			local myRun = EggsMap.Run
+			task.spawn(function()
+				while EggsMap.Active and EggsMap.Run == myRun do
+					pcall(EggsMapRebrandSweep)
+					task.wait(0.25)
+				end
+			end)
 
 			task.spawn(function()
 				local ok, result = pcall(function()
